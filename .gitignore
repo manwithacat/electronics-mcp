@@ -31,3 +31,6 @@ coverage.xml
 
 # Dev docs (local only)
 dev_docs/
+
+# Worktrees
+.worktrees/
