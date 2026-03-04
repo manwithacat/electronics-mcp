@@ -1,4 +1,5 @@
 """Numerical circuit simulation using PySpice/Ngspice."""
+import random
 import warnings
 from pathlib import Path
 
@@ -244,6 +245,187 @@ class NumericalSimulator:
         ax.set_xlabel("Time (ms)")
         ax.set_ylabel("Voltage (V)")
         ax.set_title(f"Transient Response: {title}")
+        ax.grid(True, alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(str(output_path), dpi=150)
+        plt.close(fig)
+
+    def dc_sweep(
+        self,
+        schema: CircuitSchema,
+        source_id: str,
+        start: float,
+        stop: float,
+        step: float,
+        output_node: str = "output",
+        plot_dir: Path | None = None,
+    ) -> dict:
+        """Sweep a DC source across a range and measure output.
+
+        Returns dict with sweep_values and output_values arrays.
+        """
+        circuit = self._build_circuit(schema)
+
+        # Find the source name in PySpice format
+        suffix = source_id.lstrip("V")
+        if not suffix:
+            suffix = source_id
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            simulator = circuit.simulator()
+            analysis = simulator.dc(**{f"V{suffix}": slice(start, stop, step)})
+
+        sweep_values = np.array(analysis.nodes[f"v-sweep"], dtype=float) if hasattr(analysis, 'sweep') else np.arange(start, stop + step, step)
+        output_values = np.array(analysis.nodes[output_node], dtype=float)
+
+        # Handle the sweep values from the analysis
+        try:
+            sweep_values = np.array(analysis.sweep, dtype=float)
+        except Exception:
+            sweep_values = np.arange(start, stop + step / 2, step)
+
+        result = {
+            "sweep_values": sweep_values.tolist(),
+            "output_values": output_values.tolist(),
+        }
+
+        if plot_dir is not None:
+            self._plot_dc_sweep(sweep_values, output_values,
+                                source_id, schema.name, plot_dir / "dc_sweep.png")
+            result["plot_path"] = str(plot_dir / "dc_sweep.png")
+
+        return result
+
+    def parametric_sweep(
+        self,
+        schema: CircuitSchema,
+        component_id: str,
+        parameter: str,
+        values: list[str],
+        analysis_type: str = "ac",
+        analysis_params: dict | None = None,
+        plot_dir: Path | None = None,
+    ) -> dict:
+        """Run multiple analyses while sweeping a component parameter.
+
+        Returns dict with 'sweeps' list, one entry per parameter value.
+        """
+        analysis_params = analysis_params or {}
+        sweeps = []
+
+        for val in values:
+            # Create modified schema with new parameter value
+            modified = schema.model_copy(deep=True)
+            for comp in modified.components:
+                if comp.id == component_id:
+                    comp.parameters[parameter] = val
+                    break
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", DeprecationWarning)
+                if analysis_type == "ac":
+                    result = self.ac_analysis(
+                        modified,
+                        start_freq=analysis_params.get("start_freq", 1),
+                        stop_freq=analysis_params.get("stop_freq", 1e6),
+                        points_per_decade=analysis_params.get("points_per_decade", 100),
+                        output_node=analysis_params.get("output_node", "output"),
+                    )
+                elif analysis_type == "dc":
+                    result = self.dc_operating_point(modified)
+                else:
+                    result = self.dc_operating_point(modified)
+
+            result["parameter_value"] = val
+            sweeps.append(result)
+
+        return {"sweeps": sweeps}
+
+    def monte_carlo(
+        self,
+        schema: CircuitSchema,
+        num_runs: int = 10,
+        tolerance_pct: float = 5.0,
+        analysis_type: str = "ac",
+        analysis_params: dict | None = None,
+        plot_dir: Path | None = None,
+        seed: int | None = None,
+    ) -> dict:
+        """Run Monte Carlo analysis with random component tolerances.
+
+        Varies passive component values by +-tolerance_pct% using Gaussian distribution.
+        """
+        analysis_params = analysis_params or {}
+        if seed is not None:
+            random.seed(seed)
+
+        passive_types = {"resistor", "capacitor", "inductor"}
+        param_keys = {"resistor": "resistance", "capacitor": "capacitance",
+                       "inductor": "inductance"}
+
+        runs = []
+        bandwidth_values = []
+
+        for i in range(num_runs):
+            modified = schema.model_copy(deep=True)
+
+            # Apply random tolerance to passive components
+            for comp in modified.components:
+                if comp.type in passive_types:
+                    key = param_keys.get(comp.type)
+                    if key and key in comp.parameters:
+                        nominal = parse_value(comp.parameters[key])
+                        # Gaussian with 1-sigma = tolerance/3 (99.7% within tolerance)
+                        factor = 1 + random.gauss(0, tolerance_pct / 300)
+                        varied = nominal * factor
+                        comp.parameters[key] = f"{varied:g}"
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", DeprecationWarning)
+                if analysis_type == "ac":
+                    result = self.ac_analysis(
+                        modified,
+                        start_freq=analysis_params.get("start_freq", 1),
+                        stop_freq=analysis_params.get("stop_freq", 1e6),
+                        points_per_decade=analysis_params.get("points_per_decade", 100),
+                        output_node=analysis_params.get("output_node", "output"),
+                    )
+                    if "bandwidth_hz" in result:
+                        bandwidth_values.append(result["bandwidth_hz"])
+                else:
+                    result = self.dc_operating_point(modified)
+
+            result["run"] = i + 1
+            # Remove bulky arrays for summary
+            result.pop("frequency", None)
+            result.pop("magnitude_db", None)
+            result.pop("phase_deg", None)
+            runs.append(result)
+
+        # Compute statistics
+        statistics = {}
+        if bandwidth_values:
+            statistics["bandwidth_hz"] = {
+                "mean": float(np.mean(bandwidth_values)),
+                "std": float(np.std(bandwidth_values)),
+                "min": float(np.min(bandwidth_values)),
+                "max": float(np.max(bandwidth_values)),
+            }
+
+        return {"runs": runs, "statistics": statistics}
+
+    def _plot_dc_sweep(self, sweep, output, source_id, title, output_path):
+        """Generate a DC sweep plot."""
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+
+        fig, ax = plt.subplots(figsize=(10, 4))
+        ax.plot(sweep, output)
+        ax.set_xlabel(f"{source_id} (V)")
+        ax.set_ylabel("Output (V)")
+        ax.set_title(f"DC Sweep: {title}")
         ax.grid(True, alpha=0.3)
         plt.tight_layout()
         plt.savefig(str(output_path), dpi=150)
