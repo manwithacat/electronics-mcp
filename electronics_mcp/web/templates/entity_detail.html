@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - ElectronicsMCP{% endblock %}
+{% block content %}
+<h1>{{ title }}</h1>
+<div class="card">
+    <dl class="detail-grid">
+        {% for key, value in item.items() %}
+        {% if key not in ('schema_json', 'schema_parsed') %}
+        <dt>{{ key }}</dt>
+        <dd>{{ value or '-' }}</dd>
+        {% endif %}
+        {% endfor %}
+    </dl>
+    {% if item.get('schema_parsed') %}
+    <h3 style="margin-top:1rem;">Schema</h3>
+    <pre>{{ item.schema_parsed | tojson(indent=2) }}</pre>
+    {% elif item.get('schema_json') %}
+    <h3 style="margin-top:1rem;">Schema</h3>
+    <pre>{{ item.schema_json }}</pre>
+    {% endif %}
+</div>
+{% endblock %}

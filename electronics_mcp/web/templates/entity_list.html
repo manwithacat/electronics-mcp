@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - ElectronicsMCP{% endblock %}
+{% block content %}
+<h1>{{ title }}</h1>
+<div class="card">
+    {% if items %}
+    <table>
+        <thead>
+            <tr>
+                {% for col in columns %}
+                <th>{{ col }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                {% for col in columns %}
+                <td>
+                    {% if loop.first %}
+                    <a href="{{ detail_base }}/{{ item.id }}">{{ item[col] or '-' }}</a>
+                    {% else %}
+                    {{ item[col] or '-' }}
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No items found.</p>
+    {% endif %}
+</div>
+{% endblock %}

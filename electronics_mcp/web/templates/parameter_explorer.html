@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Parameter Explorer - {{ circuit.name }}{% endblock %}
+{% block extra_style %}
+.param-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.param-item { display: flex; align-items: center; gap: 0.5rem; }
+.param-item label { min-width: 150px; font-weight: 600; font-size: 0.9rem; }
+.param-item input { flex: 1; padding: 0.4rem; border: 1px solid #ddd; border-radius: 4px; }
+#results { margin-top: 1rem; }
+{% endblock %}
+{% block content %}
+<h1>Parameter Explorer: {{ circuit.name }}</h1>
+<div class="card">
+    <form hx-post="/explorer/{{ circuit.id }}/simulate"
+          hx-target="#results" hx-trigger="submit">
+        <div class="param-grid">
+            {% for p in params %}
+            <div class="param-item">
+                <label>{{ p.component_id }}.{{ p.param_name }}</label>
+                <input type="text" name="{{ p.component_id }}__{{ p.param_name }}"
+                       value="{{ p.current_value }}">
+                <span class="badge">{{ p.component_type }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        <button type="submit" style="margin-top:1rem; padding:0.5rem 1.5rem;
+                background:#2563eb; color:white; border:none; border-radius:4px;
+                cursor:pointer;">Simulate</button>
+    </form>
+</div>
+<div id="results"></div>
+{% endblock %}

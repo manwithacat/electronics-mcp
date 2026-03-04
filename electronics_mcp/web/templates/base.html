@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ElectronicsMCP{% endblock %}</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; color: #1a1a2e; background: #f5f5f5; }
+        nav { background: #1a1a2e; color: white; padding: 1rem 2rem; display: flex; gap: 2rem; align-items: center; }
+        nav a { color: #a8b2d1; text-decoration: none; font-size: 0.9rem; }
+        nav a:hover { color: white; }
+        nav .brand { font-weight: bold; font-size: 1.1rem; color: white; }
+        main { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+        .card { background: white; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 0.75rem; border-bottom: 1px solid #e0e0e0; }
+        th { font-weight: 600; color: #666; font-size: 0.85rem; text-transform: uppercase; }
+        td a { color: #2563eb; text-decoration: none; }
+        td a:hover { text-decoration: underline; }
+        h1 { margin-bottom: 1rem; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; background: #e0e7ff; color: #3730a3; }
+        .detail-grid { display: grid; grid-template-columns: 200px 1fr; gap: 0.5rem; }
+        .detail-grid dt { font-weight: 600; color: #666; }
+        .detail-grid dd { margin: 0; }
+        pre { background: #f8f9fa; padding: 1rem; border-radius: 4px; overflow-x: auto; font-size: 0.85rem; }
+        {% block extra_style %}{% endblock %}
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="/" class="brand">ElectronicsMCP</a>
+        <a href="/circuits">Circuits</a>
+        <a href="/components">Components</a>
+        <a href="/knowledge">Knowledge</a>
+        <a href="/subcircuits">Subcircuits</a>
+    </nav>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

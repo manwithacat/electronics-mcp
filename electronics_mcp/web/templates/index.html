@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}ElectronicsMCP - Dashboard{% endblock %}
+{% block content %}
+<h1>ElectronicsMCP Dashboard</h1>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+    <a href="/circuits" class="card" style="text-decoration:none; color:inherit;">
+        <h3>Circuits</h3>
+        <p>Manage circuit designs and versions</p>
+    </a>
+    <a href="/components" class="card" style="text-decoration:none; color:inherit;">
+        <h3>Components</h3>
+        <p>Browse component library and models</p>
+    </a>
+    <a href="/knowledge" class="card" style="text-decoration:none; color:inherit;">
+        <h3>Knowledge Base</h3>
+        <p>Design rules, formulas, and references</p>
+    </a>
+    <a href="/subcircuits" class="card" style="text-decoration:none; color:inherit;">
+        <h3>Subcircuits</h3>
+        <p>Reusable subcircuit building blocks</p>
+    </a>
+</div>
+{% endblock %}
