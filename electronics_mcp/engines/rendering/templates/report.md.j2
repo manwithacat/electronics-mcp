@@ -1,0 +1,79 @@
+# {{ title }}
+
+{% if description %}
+{{ description }}
+{% endif %}
+
+**Generated:** {{ timestamp }}
+
+---
+
+## Circuit Summary
+
+- **Name:** {{ circuit.name }}
+{% if circuit.description %}- **Description:** {{ circuit.description }}{% endif %}
+- **Components:** {{ circuit.components | length }}
+{% if circuit.design_intent and circuit.design_intent.topology %}- **Topology:** {{ circuit.design_intent.topology }}{% endif %}
+
+### Component List
+
+| ID | Type | Parameters |
+|----|------|------------|
+{% for comp in circuit.components %}
+| {{ comp.id }} | {{ comp.type }} | {% for k, v in comp.parameters.items() %}{{ k }}={{ v }}{% if not loop.last %}, {% endif %}{% endfor %} |
+{% endfor %}
+
+{% if simulation_results %}
+---
+
+## Simulation Results
+
+{% for result in simulation_results %}
+### {{ result.analysis_type | title }}
+
+{% if result.get('bandwidth_hz') %}
+- **Bandwidth:** {{ "%.1f" | format(result.bandwidth_hz) }} Hz
+{% endif %}
+{% if result.get('max_gain_db') %}
+- **Max Gain:** {{ "%.2f" | format(result.max_gain_db) }} dB
+{% endif %}
+{% if result.get('rise_time') %}
+- **Rise Time:** {{ "%.2e" | format(result.rise_time) }} s
+{% endif %}
+{% if result.get('final_value') %}
+- **Final Value:** {{ "%.3f" | format(result.final_value) }} V
+{% endif %}
+{% if result.get('node_voltages') %}
+| Node | Voltage |
+|------|---------|
+{% for node, v in result.node_voltages.items() %}
+| {{ node }} | {{ "%.4f" | format(v) }} V |
+{% endfor %}
+{% endif %}
+
+{% if result.get('plot_path') %}
+![{{ result.analysis_type }}]({{ result.plot_path }})
+{% endif %}
+
+{% endfor %}
+{% endif %}
+
+{% if validation_warnings %}
+---
+
+## Validation Warnings
+
+{% for w in validation_warnings %}
+- {{ w }}
+{% endfor %}
+{% endif %}
+
+{% if notes %}
+---
+
+## Notes
+
+{% for note in notes %}
+- {{ note }}
+{% endfor %}
+{% endif %}
