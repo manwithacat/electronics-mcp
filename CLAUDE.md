@@ -20,6 +20,9 @@ pytest -v
 # Run MCP server
 python -m electronics_mcp.mcp.server
 
+# Run web UI
+python -m electronics_mcp.web.run
+
 # Install (editable)
 pip install -e ".[dev,web]"
 ```

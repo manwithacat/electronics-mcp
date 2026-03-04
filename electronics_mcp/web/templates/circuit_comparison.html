@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Circuit Comparison{% endblock %}
+{% block extra_style %}
+.comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.metric-table { margin-top: 1rem; }
+.metric-table th { background: #f0f0f0; }
+{% endblock %}
+{% block content %}
+{% if detail %}
+<h1>{{ detail.name }}</h1>
+<p>{{ detail.description or '' }}</p>
+
+{% if circuits %}
+<div class="comparison-grid">
+    {% for circuit in circuits %}
+    <div class="card">
+        <h3>{{ circuit.name }}</h3>
+        <p>{{ circuit.description or '' }}</p>
+        <a href="/circuits/{{ circuit.id }}">View details</a>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if axes %}
+<div class="card metric-table">
+    <h3>Comparison Axes</h3>
+    <table>
+        <thead><tr><th>Metric</th><th>Details</th></tr></thead>
+        <tbody>
+        {% for axis in axes %}
+        <tr><td>{{ axis }}</td><td>-</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<div id="overlay-plot" style="min-height:300px; margin-top:1rem;"></div>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script>
+fetch('/compare/{{ detail.id }}/data')
+    .then(r => r.json())
+    .then(data => {
+        const container = document.getElementById('overlay-plot');
+        if (data.results && Object.keys(data.results).length > 0) {
+            container.textContent = 'Comparison data loaded. Overlay plots require simulation results.';
+        } else {
+            container.textContent = 'No comparison results available yet.';
+        }
+    });
+</script>
+
+{% else %}
+<h1>Circuit Comparisons</h1>
+<div class="card">
+    {% if comparisons %}
+    <table>
+        <thead><tr><th>Name</th><th>Description</th><th>Created</th></tr></thead>
+        <tbody>
+        {% for comp in comparisons %}
+        <tr>
+            <td><a href="/compare/{{ comp.id }}">{{ comp.name }}</a></td>
+            <td>{{ comp.description or '-' }}</td>
+            <td>{{ comp.created_at or '-' }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No comparisons created yet. Use the MCP tools to create circuit comparisons.</p>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

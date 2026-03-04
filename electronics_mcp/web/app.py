@@ -17,7 +17,11 @@ templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 # Register sub-routers
 from electronics_mcp.web.stubs.parameter_explorer import router as explorer_router  # noqa: E402
+from electronics_mcp.web.stubs.waveform_viewer import router as waveform_router  # noqa: E402
+from electronics_mcp.web.stubs.circuit_comparison import router as comparison_router  # noqa: E402
 app.include_router(explorer_router)
+app.include_router(waveform_router)
+app.include_router(comparison_router)
 
 
 def _get_db(request: Request) -> Database:

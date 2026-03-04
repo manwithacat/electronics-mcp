@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Waveforms - {{ circuit.name }}{% endblock %}
+{% block extra_style %}
+#plot-container { width: 100%; min-height: 400px; }
+.sim-selector { margin-bottom: 1rem; }
+.sim-selector select { padding: 0.4rem; border-radius: 4px; border: 1px solid #ddd; }
+{% endblock %}
+{% block content %}
+<h1>Waveform Viewer: {{ circuit.name }}</h1>
+<div class="card">
+    {% if simulations %}
+    <div class="sim-selector">
+        <label for="sim-select">Simulation:</label>
+        <select id="sim-select" onchange="loadWaveform(this.value)">
+            {% for sim in simulations %}
+            <option value="{{ sim.id }}">{{ sim.analysis_type }} ({{ sim.created_at }})</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div id="plot-container"></div>
+    {% else %}
+    <p>No simulation results available. Run a simulation first.</p>
+    {% endif %}
+</div>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script>
+function loadWaveform(simId) {
+    fetch('/waveforms/{{ circuit.id }}/data/' + simId)
+        .then(r => r.json())
+        .then(data => {
+            const container = document.getElementById('plot-container');
+            if (data.error) { container.textContent = data.error; return; }
+            const traces = [];
+            const results = data.data;
+            if (results.time && results.signals) {
+                for (const [name, values] of Object.entries(results.signals)) {
+                    traces.push({x: results.time, y: values, name: name, type: 'scatter'});
+                }
+            } else if (results.frequency && results.magnitude) {
+                traces.push({x: results.frequency, y: results.magnitude, name: 'Magnitude', type: 'scatter'});
+            }
+            if (traces.length > 0) {
+                Plotly.newPlot(container, traces, {
+                    title: data.analysis_type,
+                    xaxis: {title: 'X'}, yaxis: {title: 'Y'},
+                    margin: {t: 40}
+                });
+            } else {
+                container.textContent = 'No plottable data found.';
+            }
+        });
+}
+{% if simulations %}
+document.addEventListener('DOMContentLoaded', function() {
+    loadWaveform('{{ simulations[0].id }}');
+});
+{% endif %}
+</script>
+{% endblock %}
