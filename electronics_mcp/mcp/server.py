@@ -35,6 +35,10 @@ from electronics_mcp.mcp import tools_circuit  # noqa: E402, F401
 from electronics_mcp.mcp import tools_simulation  # noqa: E402, F401
 from electronics_mcp.mcp import tools_rendering  # noqa: E402, F401
 from electronics_mcp.mcp import tools_fabrication  # noqa: E402, F401
+from electronics_mcp.mcp import tools_knowledge  # noqa: E402, F401
+from electronics_mcp.mcp import tools_comparison  # noqa: E402, F401
+from electronics_mcp.mcp import tools_db  # noqa: E402, F401
+from electronics_mcp.mcp import resources  # noqa: E402, F401
 
 
 def main():
