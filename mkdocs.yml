@@ -1,0 +1,77 @@
+site_name: ElectronicsMCP
+site_description: MCP server providing electronic engineering context and skills to LLM agents
+site_url: https://manwithacat.github.io/electronics-mcp/
+repo_url: https://github.com/manwithacat/electronics-mcp
+repo_name: manwithacat/electronics-mcp
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - content.code.copy
+    - content.code.annotate
+    - search.suggest
+    - search.highlight
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - mermaid2
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:mermaid2.fence_mermaid_custom
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - pymdownx.snippets
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Quick Start: getting-started/quickstart.md
+      - Configuration: getting-started/configuration.md
+  - User Guide:
+      - Circuit Definition: guide/circuits.md
+      - Simulation: guide/simulation.md
+      - Rendering: guide/rendering.md
+      - Fabrication: guide/fabrication.md
+      - Knowledge Base: guide/knowledge.md
+      - Web UI: guide/web-ui.md
+  - Reference:
+      - MCP Tools: reference/tools.md
+      - MCP Resources: reference/resources.md
+      - Circuit Schema: reference/schema.md
+      - Database Schema: reference/database.md
+      - Component Types: reference/component-types.md
+  - Development:
+      - Architecture: development/architecture.md
+      - Seed Data: development/seed-data.md
+      - Contributing: development/contributing.md
