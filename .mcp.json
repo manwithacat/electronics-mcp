@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "electronics": {
+      "command": "python",
+      "args": ["-m", "electronics_mcp.mcp.server"],
+      "cwd": "."
+    }
+  }
+}
