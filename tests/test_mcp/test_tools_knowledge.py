@@ -1,11 +1,33 @@
 import pytest
 import json
+import warnings
 from electronics_mcp.core.database import Database
+from electronics_mcp.mcp.tools_circuit import define_circuit
+from electronics_mcp.mcp.tools_simulation import dc_operating_point
 from electronics_mcp.mcp.tools_knowledge import (
     search_knowledge, get_topic, explain_topology,
     design_guide, component_info, list_formulas, learn_pattern,
+    what_if, check_design,
 )
 import electronics_mcp.mcp.server as srv
+
+
+RC_FILTER_JSON = json.dumps({
+    "name": "RC Low-Pass",
+    "components": [
+        {"id": "V1", "type": "voltage_source", "subtype": "ac",
+         "parameters": {"amplitude": "1V"}, "nodes": ["input", "gnd"]},
+        {"id": "R1", "type": "resistor",
+         "parameters": {"resistance": "10k"}, "nodes": ["input", "output"]},
+        {"id": "C1", "type": "capacitor",
+         "parameters": {"capacitance": "10n"}, "nodes": ["output", "gnd"]},
+    ]
+})
+
+
+def _create_circuit():
+    result = define_circuit(RC_FILTER_JSON)
+    return result.split("ID: ")[1].split("\n")[0].strip()
 
 
 @pytest.fixture(autouse=True)
@@ -66,3 +88,34 @@ class TestKnowledgeTools:
     def test_list_formulas_not_found(self):
         result = list_formulas("nonexistent")
         assert "No formulas" in result
+
+
+class TestWhatIf:
+    def test_what_if_returns_analysis(self):
+        cid = _create_circuit()
+        result = what_if(cid, "double R1 resistance")
+        assert "What-If Analysis" in result
+        assert "double R1 resistance" in result
+        assert "RC Low-Pass" in result
+
+    def test_what_if_lists_components(self):
+        cid = _create_circuit()
+        result = what_if(cid, "increase capacitance")
+        assert "R1" in result
+        assert "C1" in result
+
+
+class TestCheckDesign:
+    def test_check_design_no_results(self):
+        cid = _create_circuit()
+        result = check_design(cid)
+        assert "No simulation results" in result
+
+    def test_check_design_with_results(self):
+        cid = _create_circuit()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            dc_operating_point(cid)
+        result = check_design(cid)
+        assert "Design Check" in result
+        assert "Latest Simulation Results" in result

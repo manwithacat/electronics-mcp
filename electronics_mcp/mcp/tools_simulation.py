@@ -301,3 +301,73 @@ def poles_and_zeros(
     if "pz_plot" in result:
         lines.append(f"Plot: {result['pz_plot']}")
     return "\n".join(lines)
+
+
+@mcp.tool()
+def node_voltage_expression(circuit_id: str, node: str) -> str:
+    """Compute symbolic voltage expression at a circuit node.
+
+    Args:
+        circuit_id: Circuit to analyze
+        node: Node name to get voltage for (e.g. "output")
+    """
+    schema = _get_schema(circuit_id)
+    analyzer = SymbolicAnalyzer()
+    result = analyzer.node_voltage(schema, node)
+
+    lines = [f"Node Voltage at '{node}':", ""]
+    lines.append(f"  Expression: {result.get('expression', 'N/A')}")
+    lines.append(f"  LaTeX: {result.get('latex', 'N/A')}")
+    if "python_expr" in result:
+        lines.append(f"  Python: {result['python_expr']}")
+    return "\n".join(lines)
+
+
+@mcp.tool()
+def simplify_network(circuit_id: str) -> str:
+    """Simplify a circuit network to its equivalent impedance.
+
+    Computes load impedance seen by the source via series/parallel reduction.
+    """
+    schema = _get_schema(circuit_id)
+    analyzer = SymbolicAnalyzer()
+    result = analyzer.simplify(schema)
+
+    lines = ["Network Simplification:", ""]
+    lines.append(f"  Impedance: {result.get('simplified_expression', 'N/A')}")
+    lines.append(f"  LaTeX: {result.get('latex', 'N/A')}")
+    lines.append(f"  {result.get('description', '')}")
+    return "\n".join(lines)
+
+
+@mcp.tool()
+def step_response(
+    circuit_id: str,
+    input_node: str,
+    output_node: str,
+) -> str:
+    """Compute step response of a circuit's transfer function.
+
+    Gets H(s), computes inverse Laplace of H(s)/s for time-domain step response.
+
+    Args:
+        circuit_id: Circuit to analyze
+        input_node: Input node name
+        output_node: Output node name
+    """
+    schema = _get_schema(circuit_id)
+    analyzer = SymbolicAnalyzer()
+    config = get_config()
+    plot_dir = config.plots_dir
+
+    result = analyzer.step_response(schema, input_node, output_node, plot_dir=plot_dir)
+    _save_result(circuit_id, "step_response",
+                 {"input_node": input_node, "output_node": output_node},
+                 result, [result["plot_path"]] if "plot_path" in result else None)
+
+    lines = ["Step Response:", ""]
+    lines.append(f"  Expression: {result.get('expression', 'N/A')}")
+    lines.append(f"  LaTeX: {result.get('latex', 'N/A')}")
+    if "plot_path" in result:
+        lines.append(f"  Plot: {result['plot_path']}")
+    return "\n".join(lines)

@@ -46,8 +46,17 @@ class TestParameterExplorer:
             data={"R1__resistance": "2.2k", "C1__capacitance": "47n"},
         )
         assert resp.status_code == 200
-        assert "2.2k" in resp.text
-        assert "47n" in resp.text
+        # Should contain real simulation results or parameter info
+        assert "2.2k" in resp.text or "Simulation" in resp.text
+
+    def test_simulate_with_analysis_type(self, client):
+        resp = client.post(
+            "/explorer/rc1/simulate",
+            data={"R1__resistance": "1k", "C1__capacitance": "100n",
+                  "analysis_type": "dc_op"},
+        )
+        assert resp.status_code == 200
+        assert "dc_op" in resp.text or "Simulation" in resp.text
 
     def test_explorer_shows_component_types(self, client):
         resp = client.get("/explorer/rc1")

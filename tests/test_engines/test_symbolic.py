@@ -44,3 +44,43 @@ class TestPolesAndZeros:
         )
         assert len(result["poles"]) == 1
         assert len(result["zeros"]) == 0
+
+
+class TestNodeVoltage:
+    def test_node_voltage_at_output(self, analyzer):
+        result = analyzer.node_voltage(RC_FILTER, "output")
+        assert "latex" in result
+        assert "expression" in result
+        assert "python_expr" in result
+
+    def test_node_voltage_at_input(self, analyzer):
+        result = analyzer.node_voltage(RC_FILTER, "input")
+        assert "latex" in result
+
+
+class TestSimplify:
+    def test_simplify_rc(self, analyzer):
+        result = analyzer.simplify(RC_FILTER)
+        assert "simplified_expression" in result
+        assert "latex" in result
+        assert "description" in result
+
+    def test_simplify_contains_r_and_c(self, analyzer):
+        result = analyzer.simplify(RC_FILTER)
+        expr = result["simplified_expression"]
+        assert "R" in expr or "C" in expr
+
+
+class TestStepResponse:
+    def test_step_response_expression(self, analyzer):
+        result = analyzer.step_response(RC_FILTER, "input", "output")
+        assert "expression" in result
+        assert "latex" in result
+
+    def test_step_response_with_plot(self, analyzer, tmp_path):
+        result = analyzer.step_response(
+            RC_FILTER, "input", "output", plot_dir=tmp_path
+        )
+        assert "plot_path" in result
+        import os
+        assert os.path.exists(result["plot_path"])

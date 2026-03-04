@@ -6,6 +6,7 @@ from electronics_mcp.mcp.tools_circuit import define_circuit
 from electronics_mcp.mcp.tools_simulation import (
     dc_operating_point, ac_analysis, transient_analysis,
     transfer_function, impedance, poles_and_zeros,
+    node_voltage_expression, simplify_network, step_response,
 )
 import electronics_mcp.mcp.server as srv
 
@@ -76,3 +77,21 @@ class TestSymbolicTools:
         cid = _create_circuit()
         result = poles_and_zeros(cid, "input", "output")
         assert "Poles" in result
+
+    def test_node_voltage_expression(self):
+        cid = _create_circuit()
+        result = node_voltage_expression(cid, "output")
+        assert "Node Voltage" in result
+        assert "Expression" in result
+
+    def test_simplify_network(self):
+        cid = _create_circuit()
+        result = simplify_network(cid)
+        assert "Network Simplification" in result
+        assert "Impedance" in result
+
+    def test_step_response(self):
+        cid = _create_circuit()
+        result = step_response(cid, "input", "output")
+        assert "Step Response" in result
+        assert "Expression" in result

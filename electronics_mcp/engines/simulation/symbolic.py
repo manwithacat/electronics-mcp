@@ -168,6 +168,146 @@ class SymbolicAnalyzer:
 
         return result
 
+    def node_voltage(self, schema: CircuitSchema, node: str) -> dict:
+        """Compute symbolic voltage at a node.
+
+        Returns dict with 'latex', 'expression', 'python_expr' keys.
+        """
+        circuit, node_map = self._build_lcapy_circuit(schema)
+        n = node_map.get(node, 1)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            V = circuit[n].V
+
+        expr = V.expr
+        return {
+            "latex": sympy.latex(expr),
+            "expression": str(V),
+            "python_expr": str(expr),
+        }
+
+    def simplify(self, schema: CircuitSchema) -> dict:
+        """Compute total load impedance seen by the source via series/parallel reduction.
+
+        Builds passive-only circuit and computes equivalent impedance.
+        Returns dict with 'simplified_expression', 'latex', 'description'.
+        """
+        from lcapy import Circuit
+
+        # Build passive-only circuit (skip sources)
+        node_map = {schema.ground_node: 0}
+        next_node = 1
+        for comp in schema.components:
+            for node in comp.nodes:
+                if node not in node_map:
+                    node_map[node] = next_node
+                    next_node += 1
+
+        passive_cct = Circuit()
+        source_node = None
+        for comp in schema.components:
+            if comp.type in ("voltage_source", "current_source"):
+                # Track which node the source drives
+                for n in comp.nodes:
+                    if node_map[n] != 0:
+                        source_node = node_map[n]
+                continue
+            nodes = [str(node_map[n]) for n in comp.nodes]
+            line = self._component_to_lcapy(comp, nodes)
+            if line:
+                passive_cct.add(line)
+
+        if source_node is None:
+            source_node = 1
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            Z = passive_cct.impedance(source_node, 0)
+
+        expr = Z.expr
+        simplified = sympy.simplify(expr)
+        return {
+            "simplified_expression": str(simplified),
+            "latex": sympy.latex(simplified),
+            "description": f"Load impedance from node {source_node} to ground: {simplified}",
+        }
+
+    def step_response(
+        self,
+        schema: CircuitSchema,
+        input_node: str,
+        output_node: str,
+        plot_dir: Path | None = None,
+    ) -> dict:
+        """Compute step response of the circuit.
+
+        Gets H(s), computes inverse Laplace of H(s)/s for the step response.
+        Returns dict with 'expression', 'latex', and optionally 'plot_path'.
+        """
+        circuit, node_map = self._build_lcapy_circuit(schema)
+
+        in_node = node_map.get(input_node, 1)
+        out_node = node_map.get(output_node, 2)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            H = circuit.transfer(in_node, 0, out_node, 0)
+            # Step response: inverse Laplace of H(s)/s
+            from lcapy import s as lcapy_s
+            step = (H / lcapy_s).inverse_laplace(causal=True)
+
+        expr = step.expr
+        result = {
+            "expression": str(step),
+            "latex": sympy.latex(expr),
+        }
+
+        if plot_dir is not None:
+            plot_dir = Path(plot_dir)
+            plot_dir.mkdir(parents=True, exist_ok=True)
+            plot_path = plot_dir / "step_response.png"
+            self._plot_step_response(expr, plot_path)
+            result["plot_path"] = str(plot_path)
+
+        return result
+
+    def _plot_step_response(self, expr, output_path):
+        """Generate a step response plot."""
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        import numpy as np
+
+        fig, ax = plt.subplots(figsize=(8, 5))
+
+        # Try numeric evaluation
+        t_sym = sympy.Symbol("t")
+        free_syms = expr.free_symbols - {t_sym}
+
+        if not free_syms:
+            # Fully numeric -- plot directly
+            f = sympy.lambdify(t_sym, expr, modules=["numpy"])
+            t = np.linspace(0, 5, 500)
+            try:
+                y = np.real(f(t))
+                ax.plot(t, y, "b-", linewidth=2)
+            except Exception:
+                ax.text(0.5, 0.5, str(expr), transform=ax.transAxes,
+                        ha="center", fontsize=10)
+        else:
+            ax.text(0.5, 0.5, f"${sympy.latex(expr)}$", transform=ax.transAxes,
+                    ha="center", fontsize=14)
+
+        ax.set_xlabel("Time (s)")
+        ax.set_ylabel("Response")
+        ax.set_title("Step Response")
+        ax.grid(True, alpha=0.3)
+
+        plt.tight_layout()
+        plt.savefig(str(output_path), dpi=150)
+        plt.close(fig)
+
     def _plot_pole_zero(self, poles, zeros, output_path):
         """Generate a pole-zero plot."""
         import matplotlib
