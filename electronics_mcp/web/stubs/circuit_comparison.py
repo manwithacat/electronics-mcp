@@ -1,6 +1,6 @@
 """Circuit comparison: side-by-side display with overlaid plots and metrics."""
+
 import json
-import uuid
 from pathlib import Path
 
 from fastapi import APIRouter, Request
@@ -19,6 +19,7 @@ def _get_db(request: Request) -> Database:
     if hasattr(request.app.state, "db"):
         return request.app.state.db
     from electronics_mcp.config import ProjectConfig
+
     return Database(ProjectConfig().db_path)
 
 
@@ -54,8 +55,8 @@ async def comparison_detail(request: Request, comparison_id: str):
         circuits = []
         for cid in circuit_ids:
             circuit = conn.execute(
-                "SELECT id, name, description, schema_json "
-                "FROM circuits WHERE id = ?", (cid,)
+                "SELECT id, name, description, schema_json FROM circuits WHERE id = ?",
+                (cid,),
             ).fetchone()
             if circuit:
                 circuits.append(dict(circuit))
@@ -76,9 +77,14 @@ async def comparison_detail(request: Request, comparison_id: str):
 
     return templates.TemplateResponse(
         "circuit_comparison.html",
-        {"request": request, "comparisons": [],
-         "detail": comp, "circuits": circuits,
-         "axes": axes, "results": results},
+        {
+            "request": request,
+            "comparisons": [],
+            "detail": comp,
+            "circuits": circuits,
+            "axes": axes,
+            "results": results,
+        },
     )
 
 
@@ -89,7 +95,8 @@ async def comparison_data(request: Request, comparison_id: str):
     with db.connect() as conn:
         row = conn.execute(
             "SELECT circuit_ids, comparison_axes, results "
-            "FROM comparisons WHERE id = ?", (comparison_id,)
+            "FROM comparisons WHERE id = ?",
+            (comparison_id,),
         ).fetchone()
     if not row:
         return {"error": "Comparison not found"}
@@ -133,7 +140,9 @@ async def comparison_run(request: Request, comparison_id: str):
                 overlay["circuits"][cid] = {
                     "name": name,
                     "frequency": results.get("frequency", []),
-                    "magnitude": results.get("magnitude_db", results.get("magnitude", [])),
+                    "magnitude": results.get(
+                        "magnitude_db", results.get("magnitude", [])
+                    ),
                     "phase": results.get("phase_deg", results.get("phase", [])),
                 }
             else:

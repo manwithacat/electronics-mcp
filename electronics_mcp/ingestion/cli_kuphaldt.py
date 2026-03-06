@@ -1,4 +1,5 @@
 """CLI wrapper: download and ingest Kuphaldt 'Lessons in Electric Circuits'."""
+
 import argparse
 import sys
 from pathlib import Path
@@ -12,15 +13,21 @@ def main():
         description="Ingest Kuphaldt 'Lessons in Electric Circuits' HTML volumes.",
     )
     parser.add_argument(
-        "--source-dir", type=Path, required=True,
+        "--source-dir",
+        type=Path,
+        required=True,
         help="Directory containing Kuphaldt HTML volume files",
     )
     parser.add_argument(
-        "--db", type=Path, default=Path("electronics.db"),
+        "--db",
+        type=Path,
+        default=Path("electronics.db"),
         help="Database file path (default: electronics.db)",
     )
     parser.add_argument(
-        "--min-length", type=int, default=50,
+        "--min-length",
+        type=int,
+        default=50,
         help="Minimum content length to keep (default: 50)",
     )
     args = parser.parse_args()

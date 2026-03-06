@@ -1,7 +1,9 @@
 """E2E tests: agent-browser-agent round-trip via Playwright."""
-import pytest
-from playwright.sync_api import Page, expect
 
+import pytest
+
+pw = pytest.importorskip("playwright")
+from playwright.sync_api import Page, expect  # noqa: E402
 
 pytestmark = pytest.mark.e2e
 
@@ -9,7 +11,9 @@ pytestmark = pytest.mark.e2e
 class TestAgentBrowserRoundTrip:
     """Full round-trip: agent creates circuit → student views/modifies in browser → agent sees changes."""
 
-    def test_create_view_modify_verify(self, e2e_server, page: Page, rc_circuit_id, circuit_manager):
+    def test_create_view_modify_verify(
+        self, e2e_server, page: Page, rc_circuit_id, circuit_manager
+    ):
         cid = rc_circuit_id
 
         # (b) Browser: view circuit detail
@@ -54,7 +58,9 @@ class TestParameterExplorerSave:
         page.locator("button:text('Save changes')").click()
         expect(page.locator("#save-status")).to_contain_text("No parameter changes")
 
-    def test_save_multiple_parameters(self, e2e_server, page: Page, rc_circuit_id, circuit_manager):
+    def test_save_multiple_parameters(
+        self, e2e_server, page: Page, rc_circuit_id, circuit_manager
+    ):
         cid = rc_circuit_id
         page.goto(f"{e2e_server}/explorer/{cid}")
 
@@ -69,7 +75,9 @@ class TestParameterExplorerSave:
         assert r1.parameters["resistance"] == "33k"
         assert c1.parameters["capacitance"] == "220n"
 
-    def test_save_then_reload_shows_new_values(self, e2e_server, page: Page, rc_circuit_id):
+    def test_save_then_reload_shows_new_values(
+        self, e2e_server, page: Page, rc_circuit_id
+    ):
         cid = rc_circuit_id
         page.goto(f"{e2e_server}/explorer/{cid}")
 

@@ -2,25 +2,44 @@
 
 Implements Master Spec Section 4: Circuit Description Schema.
 """
+
 from pydantic import BaseModel, field_validator
-from typing import Any
 
 # Valid component types from the type hierarchy
 VALID_COMPONENT_TYPES = {
     # Passive
-    "resistor", "capacitor", "inductor", "potentiometer", "fuse", "crystal",
+    "resistor",
+    "capacitor",
+    "inductor",
+    "potentiometer",
+    "fuse",
+    "crystal",
     # Source
-    "voltage_source", "current_source", "dependent_source",
+    "voltage_source",
+    "current_source",
+    "dependent_source",
     # Semiconductor
-    "diode", "zener", "led", "bjt", "mosfet", "jfet", "igbt",
+    "diode",
+    "zener",
+    "led",
+    "bjt",
+    "mosfet",
+    "jfet",
+    "igbt",
     # Integrated circuit
-    "opamp", "comparator", "voltage_regulator", "timer_555", "custom_ic",
+    "opamp",
+    "comparator",
+    "voltage_regulator",
+    "timer_555",
+    "custom_ic",
     # Subcircuit
     "subcircuit",
     # Transformer
     "transformer",
     # Electromechanical
-    "relay", "switch", "connector",
+    "relay",
+    "switch",
+    "connector",
 }
 
 

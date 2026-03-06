@@ -1,4 +1,5 @@
 """SPICE netlist file generation from CircuitSchema."""
+
 from pathlib import Path
 
 from electronics_mcp.core.schema import CircuitSchema

@@ -2,8 +2,13 @@ import pytest
 import json
 from electronics_mcp.core.database import Database
 from electronics_mcp.mcp.tools_circuit import (
-    define_circuit, modify_circuit, get_circuit,
-    validate_circuit, list_circuits, clone_circuit, delete_circuit,
+    define_circuit,
+    modify_circuit,
+    get_circuit,
+    validate_circuit,
+    list_circuits,
+    clone_circuit,
+    delete_circuit,
 )
 import electronics_mcp.mcp.server as srv
 
@@ -19,17 +24,32 @@ def reset_server_state(tmp_project):
     srv._db = None
 
 
-RC_FILTER_JSON = json.dumps({
-    "name": "RC Low-Pass",
-    "components": [
-        {"id": "V1", "type": "voltage_source", "subtype": "ac",
-         "parameters": {"amplitude": "1V"}, "nodes": ["input", "gnd"]},
-        {"id": "R1", "type": "resistor",
-         "parameters": {"resistance": "10k"}, "nodes": ["input", "output"]},
-        {"id": "C1", "type": "capacitor",
-         "parameters": {"capacitance": "10n"}, "nodes": ["output", "gnd"]},
-    ]
-})
+RC_FILTER_JSON = json.dumps(
+    {
+        "name": "RC Low-Pass",
+        "components": [
+            {
+                "id": "V1",
+                "type": "voltage_source",
+                "subtype": "ac",
+                "parameters": {"amplitude": "1V"},
+                "nodes": ["input", "gnd"],
+            },
+            {
+                "id": "R1",
+                "type": "resistor",
+                "parameters": {"resistance": "10k"},
+                "nodes": ["input", "output"],
+            },
+            {
+                "id": "C1",
+                "type": "capacitor",
+                "parameters": {"capacitance": "10n"},
+                "nodes": ["output", "gnd"],
+            },
+        ],
+    }
+)
 
 
 class TestCircuitTools:
@@ -45,9 +65,9 @@ class TestCircuitTools:
         result = define_circuit(RC_FILTER_JSON)
         circuit_id = result.split("ID: ")[1].split("\n")[0].strip()
 
-        mod_json = json.dumps({
-            "update": [{"id": "R1", "parameters": {"resistance": "22k"}}]
-        })
+        mod_json = json.dumps(
+            {"update": [{"id": "R1", "parameters": {"resistance": "22k"}}]}
+        )
         mod_result = modify_circuit(circuit_id, mod_json)
         assert "version 2" in mod_result
 

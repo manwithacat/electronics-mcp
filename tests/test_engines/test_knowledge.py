@@ -51,14 +51,18 @@ class TestKnowledgeManager:
 
     def test_search_with_category(self, km):
         km.learn_pattern("filter", "hp_rc", "HP Filter", "High-pass filter content.")
-        km.learn_pattern("amplifier", "common_emitter", "CE Amp", "Common emitter amplifier.")
+        km.learn_pattern(
+            "amplifier", "common_emitter", "CE Amp", "Common emitter amplifier."
+        )
 
         filter_results = km.search("filter", category="filter")
         assert all(r["category"] == "filter" for r in filter_results)
 
     def test_get_formulas(self, km):
         km.learn_pattern(
-            "topology", "wheatstone_bridge", "Wheatstone Bridge",
+            "topology",
+            "wheatstone_bridge",
+            "Wheatstone Bridge",
             "Used for precision measurements.",
             formulas=[
                 {"name": "balance", "expression": "R1*R3 = R2*R4"},
@@ -78,7 +82,8 @@ class TestTopologyExplainer:
     def test_explain_known_topic(self, db_seeded):
         km = KnowledgeManager(db_seeded)
         km.learn_pattern(
-            "topology", "common_emitter",
+            "topology",
+            "common_emitter",
             "Common Emitter Amplifier",
             "The common emitter is a basic BJT amplifier topology providing voltage gain.",
             formulas=[{"name": "Av", "expression": "-gm * Rc"}],
@@ -91,7 +96,8 @@ class TestTopologyExplainer:
     def test_explain_via_search(self, db_seeded):
         km = KnowledgeManager(db_seeded)
         km.learn_pattern(
-            "filter", "butterworth",
+            "filter",
+            "butterworth",
             "Butterworth Filter",
             "Maximally flat magnitude response filter design.",
         )
@@ -112,7 +118,8 @@ class TestDesignGuide:
     def test_generate_filter_guide(self, db_seeded):
         km = KnowledgeManager(db_seeded)
         km.learn_pattern(
-            "filter", "low_pass_filter",
+            "filter",
+            "low_pass_filter",
             "Low-Pass Filter Design",
             "1. Choose cutoff frequency\n2. Select R value\n3. Calculate C = 1/(2*pi*R*fc)",
             formulas=[{"name": "fc", "expression": "1/(2*pi*R*C)"}],
@@ -125,9 +132,12 @@ class TestDesignGuide:
 
     def test_generate_with_requirements(self, db_seeded):
         guide = DesignGuide(db_seeded)
-        result = guide.generate("amplifier", requirements={
-            "frequency": "1kHz",
-            "voltage": "12V",
-        })
+        result = guide.generate(
+            "amplifier",
+            requirements={
+                "frequency": "1kHz",
+                "voltage": "12V",
+            },
+        )
         assert any("1kHz" in n for n in result["notes"])
         assert any("12V" in n for n in result["notes"])

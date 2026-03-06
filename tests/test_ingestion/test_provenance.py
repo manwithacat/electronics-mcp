@@ -1,4 +1,5 @@
 """Tests for provenance tracking and QA-based seed filtering."""
+
 from electronics_mcp.core.database import Database
 from electronics_mcp.ingestion.provenance import (
     record_provenance,
@@ -13,8 +14,12 @@ class TestProvenance:
         db = Database(tmp_path / "test.db")
         db.initialize()
         record_provenance(
-            db, "knowledge", "abc-123", "test_source",
-            licence="MIT", notes="test note",
+            db,
+            "knowledge",
+            "abc-123",
+            "test_source",
+            licence="MIT",
+            notes="test note",
         )
         with db.connect() as conn:
             row = conn.execute(
@@ -31,7 +36,10 @@ class TestProvenance:
         db = Database(tmp_path / "test.db")
         db.initialize()
         count = record_bulk_provenance(
-            db, "subcircuits", ["id1", "id2", "id3"], "builder",
+            db,
+            "subcircuits",
+            ["id1", "id2", "id3"],
+            "builder",
             licence="original",
         )
         assert count == 3

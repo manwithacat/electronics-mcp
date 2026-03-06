@@ -11,12 +11,25 @@ def analyzer():
 RC_FILTER = CircuitSchema(
     name="RC Low-Pass",
     components=[
-        ComponentBase(id="V1", type="voltage_source", subtype="ac",
-                      parameters={"amplitude": "1V"}, nodes=["input", "gnd"]),
-        ComponentBase(id="R1", type="resistor",
-                      parameters={"resistance": "R"}, nodes=["input", "output"]),
-        ComponentBase(id="C1", type="capacitor",
-                      parameters={"capacitance": "C"}, nodes=["output", "gnd"]),
+        ComponentBase(
+            id="V1",
+            type="voltage_source",
+            subtype="ac",
+            parameters={"amplitude": "1V"},
+            nodes=["input", "gnd"],
+        ),
+        ComponentBase(
+            id="R1",
+            type="resistor",
+            parameters={"resistance": "R"},
+            nodes=["input", "output"],
+        ),
+        ComponentBase(
+            id="C1",
+            type="capacitor",
+            parameters={"capacitance": "C"},
+            nodes=["output", "gnd"],
+        ),
     ],
 )
 
@@ -78,9 +91,8 @@ class TestStepResponse:
         assert "latex" in result
 
     def test_step_response_with_plot(self, analyzer, tmp_path):
-        result = analyzer.step_response(
-            RC_FILTER, "input", "output", plot_dir=tmp_path
-        )
+        result = analyzer.step_response(RC_FILTER, "input", "output", plot_dir=tmp_path)
         assert "plot_path" in result
         import os
+
         assert os.path.exists(result["plot_path"])

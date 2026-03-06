@@ -1,8 +1,14 @@
 """MCP tools for rendering schematics, plots, and reports."""
+
 from electronics_mcp.mcp.server import mcp, get_db, get_config
 from electronics_mcp.core.circuit_manager import CircuitManager
 from electronics_mcp.engines.rendering.schematic import SchematicRenderer
-from electronics_mcp.engines.rendering.plots import draw_bode, draw_waveform, draw_phasor, draw_pole_zero
+from electronics_mcp.engines.rendering.plots import (
+    draw_bode,
+    draw_waveform,
+    draw_phasor,
+    draw_pole_zero,
+)
 from electronics_mcp.engines.rendering.reports import generate_markdown, generate_pdf
 
 
@@ -42,6 +48,7 @@ def render_bode(
         phase_deg_json: JSON array of phase values in degrees
     """
     import json
+
     config = get_config()
     output_path = config.plots_dir / f"bode_{circuit_id[:8]}.png"
 
@@ -69,10 +76,12 @@ def render_waveform(
         title: Plot title
     """
     import json
+
     config = get_config()
     output_path = config.plots_dir / f"waveform_{circuit_id[:8]}.png"
 
     import numpy as np
+
     time_data = np.array(json.loads(time_json))
     signals = json.loads(signals_json)
 
@@ -96,6 +105,7 @@ def render_phasor(
         phasors_json: JSON object mapping names to {magnitude, angle_deg}
     """
     import json
+
     config = get_config()
     output_path = config.plots_dir / f"phasor_{circuit_id[:8]}.png"
 
@@ -119,6 +129,7 @@ def render_pole_zero(
         zeros_json: JSON array of [real, imag] pairs for zeros
     """
     import json
+
     config = get_config()
     output_path = config.plots_dir / f"pz_{circuit_id[:8]}.png"
 
@@ -153,16 +164,20 @@ def generate_circuit_report(circuit_id: str, notes: str = "") -> str:
         ).fetchall()
         for row in rows:
             import json
-            sim_results.append({
-                "analysis_type": row["analysis_type"],
-                "parameters": json.loads(row["parameters"]),
-                "results": json.loads(row["results_json"]),
-            })
+
+            sim_results.append(
+                {
+                    "analysis_type": row["analysis_type"],
+                    "parameters": json.loads(row["parameters"]),
+                    "results": json.loads(row["results_json"]),
+                }
+            )
 
     validation_warnings = cm.validate(circuit_id)
 
     path = generate_markdown(
-        schema, output_path,
+        schema,
+        output_path,
         title=schema.name,
         simulation_results=sim_results,
         validation_warnings=validation_warnings,
@@ -194,18 +209,22 @@ def generate_circuit_pdf(circuit_id: str, notes: str = "") -> str:
         ).fetchall()
         for row in rows:
             import json
-            sim_results.append({
-                "analysis_type": row["analysis_type"],
-                "parameters": json.loads(row["parameters"]),
-                "results": json.loads(row["results_json"]),
-            })
+
+            sim_results.append(
+                {
+                    "analysis_type": row["analysis_type"],
+                    "parameters": json.loads(row["parameters"]),
+                    "results": json.loads(row["results_json"]),
+                }
+            )
 
     validation_warnings = cm.validate(circuit_id)
 
     # Generate markdown first, then convert to PDF
     md_path = config.output_dir / f"report_{circuit_id[:8]}.md"
     generate_markdown(
-        schema, md_path,
+        schema,
+        md_path,
         title=schema.name,
         simulation_results=sim_results,
         validation_warnings=validation_warnings,

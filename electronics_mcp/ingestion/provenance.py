@@ -1,4 +1,5 @@
 """Record provenance (data lineage) for ingested records."""
+
 from datetime import datetime, timezone
 
 from electronics_mcp.core.database import Database
@@ -22,8 +23,16 @@ def record_provenance(
             "(record_table, record_id, source_name, source_url, licence, "
             "original_path, extraction_date, notes) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (record_table, record_id, source_name, source_url, licence,
-             original_path, datetime.now(timezone.utc).isoformat(), notes),
+            (
+                record_table,
+                record_id,
+                source_name,
+                source_url,
+                licence,
+                original_path,
+                datetime.now(timezone.utc).isoformat(),
+                notes,
+            ),
         )
 
 
@@ -52,8 +61,16 @@ def record_bulk_provenance(
             "original_path, extraction_date, notes) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
             [
-                (record_table, rid, source_name, source_url, licence,
-                 original_path, now, notes)
+                (
+                    record_table,
+                    rid,
+                    source_name,
+                    source_url,
+                    licence,
+                    original_path,
+                    now,
+                    notes,
+                )
                 for rid in record_ids
             ],
         )

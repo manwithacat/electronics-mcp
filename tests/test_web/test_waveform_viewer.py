@@ -14,16 +14,26 @@ def client(tmp_path):
         conn.execute(
             "INSERT INTO circuits (id, name, description, schema_json) "
             "VALUES (?, ?, ?, ?)",
-            ("c1", "Test Circuit", "A test",
-             json.dumps({"name": "test", "components": []})),
+            (
+                "c1",
+                "Test Circuit",
+                "A test",
+                json.dumps({"name": "test", "components": []}),
+            ),
         )
         conn.execute(
             "INSERT INTO simulation_results "
             "(id, circuit_id, analysis_type, parameters, results_json) "
             "VALUES (?, ?, ?, ?, ?)",
-            ("sim1", "c1", "transient", json.dumps({"duration": 0.01}),
-             json.dumps({"time": [0, 0.001, 0.002],
-                         "signals": {"vout": [0, 2.5, 5.0]}})),
+            (
+                "sim1",
+                "c1",
+                "transient",
+                json.dumps({"duration": 0.01}),
+                json.dumps(
+                    {"time": [0, 0.001, 0.002], "signals": {"vout": [0, 2.5, 5.0]}}
+                ),
+            ),
         )
     return TestClient(app)
 
@@ -59,8 +69,13 @@ class TestWaveformViewer:
                 "INSERT INTO simulation_results "
                 "(id, circuit_id, analysis_type, parameters, results_json) "
                 "VALUES (?, ?, ?, ?, ?)",
-                ("sim2", "c1", "transient", "{}",
-                 json.dumps({"time": [0, 1], "voltage": [0, 5]})),
+                (
+                    "sim2",
+                    "c1",
+                    "transient",
+                    "{}",
+                    json.dumps({"time": [0, 1], "voltage": [0, 5]}),
+                ),
             )
         resp = client.get("/waveforms/c1/data/sim2")
         data = resp.json()["data"]
@@ -75,8 +90,15 @@ class TestWaveformViewer:
                 "INSERT INTO simulation_results "
                 "(id, circuit_id, analysis_type, parameters, results_json) "
                 "VALUES (?, ?, ?, ?, ?)",
-                ("sim3", "c1", "ac", "{}",
-                 json.dumps({"frequency": [1, 10, 100], "magnitude_db": [0, -3, -20]})),
+                (
+                    "sim3",
+                    "c1",
+                    "ac",
+                    "{}",
+                    json.dumps(
+                        {"frequency": [1, 10, 100], "magnitude_db": [0, -3, -20]}
+                    ),
+                ),
             )
         resp = client.get("/waveforms/c1/data/sim3")
         data = resp.json()["data"]

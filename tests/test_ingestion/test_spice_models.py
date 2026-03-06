@@ -1,8 +1,9 @@
 import pytest
-from pathlib import Path
 from electronics_mcp.core.database import Database
 from electronics_mcp.ingestion.ingest_spice_models import (
-    parse_model_statement, parse_subckt_statement, ingest_spice_file,
+    parse_model_statement,
+    parse_subckt_statement,
+    ingest_spice_file,
 )
 
 

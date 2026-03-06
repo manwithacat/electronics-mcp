@@ -1,4 +1,5 @@
 """MCP tools for circuit definition and management."""
+
 from electronics_mcp.mcp.server import mcp, get_db
 from electronics_mcp.core.circuit_manager import CircuitManager
 from electronics_mcp.core.schema import CircuitSchema, CircuitModification
@@ -70,9 +71,14 @@ def list_circuits() -> str:
     circuits = cm.list_all()
     if not circuits:
         return "No circuits in this project. Use define_circuit to create one."
-    lines = ["| ID | Name | Status | Components |", "|---|------|--------|------------|"]
+    lines = [
+        "| ID | Name | Status | Components |",
+        "|---|------|--------|------------|",
+    ]
     for c in circuits:
-        lines.append(f"| {c['id'][:8]}... | {c['name']} | {c['status']} | {c['component_count']} |")
+        lines.append(
+            f"| {c['id'][:8]}... | {c['name']} | {c['status']} | {c['component_count']} |"
+        )
     return "\n".join(lines)
 
 

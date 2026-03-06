@@ -8,10 +8,18 @@ from electronics_mcp.web.app import app
 RC_SCHEMA = {
     "name": "rc_filter",
     "components": [
-        {"id": "R1", "type": "resistor",
-         "parameters": {"resistance": "1k"}, "nodes": ["in", "out"]},
-        {"id": "C1", "type": "capacitor",
-         "parameters": {"capacitance": "100n"}, "nodes": ["out", "gnd"]},
+        {
+            "id": "R1",
+            "type": "resistor",
+            "parameters": {"resistance": "1k"},
+            "nodes": ["in", "out"],
+        },
+        {
+            "id": "C1",
+            "type": "capacitor",
+            "parameters": {"capacitance": "100n"},
+            "nodes": ["out", "gnd"],
+        },
     ],
 }
 
@@ -60,8 +68,11 @@ class TestParameterExplorer:
     def test_simulate_with_analysis_type(self, client):
         resp = client.post(
             "/explorer/rc1/simulate",
-            data={"R1__resistance": "1k", "C1__capacitance": "100n",
-                  "analysis_type": "dc_op"},
+            data={
+                "R1__resistance": "1k",
+                "C1__capacitance": "100n",
+                "analysis_type": "dc_op",
+            },
         )
         assert resp.status_code == 200
         assert "dc_op" in resp.text or "Simulation" in resp.text

@@ -1,4 +1,5 @@
 """FastMCP server for ElectronicsMCP."""
+
 from fastmcp import FastMCP
 from electronics_mcp.config import ProjectConfig
 from electronics_mcp.core.database import Database

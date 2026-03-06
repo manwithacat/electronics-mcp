@@ -1,9 +1,9 @@
 """Bill of Materials generation from CircuitSchema."""
+
 import csv
 from pathlib import Path
 
 from electronics_mcp.core.schema import CircuitSchema
-from electronics_mcp.core.units import parse_value, format_value
 
 
 def generate_bom(
@@ -49,11 +49,13 @@ def generate_bom_summary(schema: CircuitSchema) -> dict:
         key = f"{comp.type}"
         if key not in groups:
             groups[key] = []
-        groups[key].append({
-            "id": comp.id,
-            "value": _get_display_value(comp),
-            "type": comp.type,
-        })
+        groups[key].append(
+            {
+                "id": comp.id,
+                "value": _get_display_value(comp),
+                "type": comp.type,
+            }
+        )
 
     return {
         "groups": groups,

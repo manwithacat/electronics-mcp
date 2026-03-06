@@ -1,5 +1,4 @@
 import pytest
-from pathlib import Path
 from electronics_mcp.core.schema import CircuitSchema, ComponentBase
 from electronics_mcp.engines.rendering.schematic import SchematicRenderer
 
@@ -12,12 +11,25 @@ def renderer():
 RC_FILTER = CircuitSchema(
     name="RC Low-Pass",
     components=[
-        ComponentBase(id="V1", type="voltage_source", subtype="ac",
-                      parameters={"amplitude": "1V"}, nodes=["input", "gnd"]),
-        ComponentBase(id="R1", type="resistor",
-                      parameters={"resistance": "10k"}, nodes=["input", "output"]),
-        ComponentBase(id="C1", type="capacitor",
-                      parameters={"capacitance": "10n"}, nodes=["output", "gnd"]),
+        ComponentBase(
+            id="V1",
+            type="voltage_source",
+            subtype="ac",
+            parameters={"amplitude": "1V"},
+            nodes=["input", "gnd"],
+        ),
+        ComponentBase(
+            id="R1",
+            type="resistor",
+            parameters={"resistance": "10k"},
+            nodes=["input", "output"],
+        ),
+        ComponentBase(
+            id="C1",
+            type="capacitor",
+            parameters={"capacitance": "10n"},
+            nodes=["output", "gnd"],
+        ),
     ],
 )
 

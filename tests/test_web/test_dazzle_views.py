@@ -15,19 +15,41 @@ def client(tmp_path):
         conn.execute(
             "INSERT INTO circuits (id, name, description, schema_json, status) "
             "VALUES (?, ?, ?, ?, ?)",
-            ("c1", "Test RC", "A test circuit",
-             json.dumps({"name": "test", "components": [
-                 {"id": "R1", "type": "resistor",
-                  "parameters": {"resistance": "1k"}, "nodes": ["in", "out"]},
-             ]}), "draft"),
+            (
+                "c1",
+                "Test RC",
+                "A test circuit",
+                json.dumps(
+                    {
+                        "name": "test",
+                        "components": [
+                            {
+                                "id": "R1",
+                                "type": "resistor",
+                                "parameters": {"resistance": "1k"},
+                                "nodes": ["in", "out"],
+                            },
+                        ],
+                    }
+                ),
+                "draft",
+            ),
         )
         conn.execute(
             "INSERT INTO knowledge (id, category, topic, title, content, "
             "formulas, related_topics, difficulty, source) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            ("k1", "design_rule", "decoupling", "Decoupling Caps",
-             "Place decoupling capacitors close to IC power pins for noise reduction.",
-             "[]", "[]", "beginner", "test"),
+            (
+                "k1",
+                "design_rule",
+                "decoupling",
+                "Decoupling Caps",
+                "Place decoupling capacitors close to IC power pins for noise reduction.",
+                "[]",
+                "[]",
+                "beginner",
+                "test",
+            ),
         )
     return TestClient(app)
 

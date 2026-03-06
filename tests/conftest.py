@@ -1,5 +1,4 @@
 import pytest
-from pathlib import Path
 from electronics_mcp.config import ProjectConfig
 
 

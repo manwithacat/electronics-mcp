@@ -3,7 +3,9 @@ import json
 from electronics_mcp.core.database import Database
 from electronics_mcp.mcp.tools_circuit import define_circuit
 from electronics_mcp.mcp.tools_comparison import (
-    create_comparison, compare_boms, rank_designs,
+    create_comparison,
+    compare_boms,
+    rank_designs,
 )
 import electronics_mcp.mcp.server as srv
 
@@ -19,17 +21,32 @@ def reset_server_state(tmp_project):
 
 
 def _make_circuit(name, r_value="10k"):
-    schema = json.dumps({
-        "name": name,
-        "components": [
-            {"id": "V1", "type": "voltage_source", "subtype": "dc",
-             "parameters": {"voltage": "5V"}, "nodes": ["input", "gnd"]},
-            {"id": "R1", "type": "resistor",
-             "parameters": {"resistance": r_value}, "nodes": ["input", "output"]},
-            {"id": "C1", "type": "capacitor",
-             "parameters": {"capacitance": "10n"}, "nodes": ["output", "gnd"]},
-        ]
-    })
+    schema = json.dumps(
+        {
+            "name": name,
+            "components": [
+                {
+                    "id": "V1",
+                    "type": "voltage_source",
+                    "subtype": "dc",
+                    "parameters": {"voltage": "5V"},
+                    "nodes": ["input", "gnd"],
+                },
+                {
+                    "id": "R1",
+                    "type": "resistor",
+                    "parameters": {"resistance": r_value},
+                    "nodes": ["input", "output"],
+                },
+                {
+                    "id": "C1",
+                    "type": "capacitor",
+                    "parameters": {"capacitance": "10n"},
+                    "nodes": ["output", "gnd"],
+                },
+            ],
+        }
+    )
     result = define_circuit(schema)
     return result.split("ID: ")[1].split("\n")[0].strip()
 
@@ -38,8 +55,7 @@ class TestComparisonTools:
     def test_create_comparison(self):
         cid1 = _make_circuit("Circuit A")
         cid2 = _make_circuit("Circuit B", "22k")
-        result = create_comparison("Test Comparison",
-                                   json.dumps([cid1, cid2]))
+        result = create_comparison("Test Comparison", json.dumps([cid1, cid2]))
         assert "created" in result.lower()
 
     def test_compare_boms(self):

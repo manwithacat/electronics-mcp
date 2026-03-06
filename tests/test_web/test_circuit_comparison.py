@@ -15,16 +15,24 @@ def client(tmp_path):
             conn.execute(
                 "INSERT INTO circuits (id, name, description, schema_json) "
                 "VALUES (?, ?, ?, ?)",
-                (f"c{i}", f"Circuit {i}", f"Test {i}",
-                 json.dumps({"name": f"c{i}", "components": []})),
+                (
+                    f"c{i}",
+                    f"Circuit {i}",
+                    f"Test {i}",
+                    json.dumps({"name": f"c{i}", "components": []}),
+                ),
             )
         conn.execute(
             "INSERT INTO comparisons (id, name, description, circuit_ids, "
             "comparison_axes, results) VALUES (?, ?, ?, ?, ?, ?)",
-            ("cmp1", "RC vs RL", "Filter comparison",
-             json.dumps(["c0", "c1"]),
-             json.dumps(["bandwidth", "attenuation"]),
-             json.dumps({"c0": {"bandwidth": "1kHz"}, "c1": {"bandwidth": "2kHz"}})),
+            (
+                "cmp1",
+                "RC vs RL",
+                "Filter comparison",
+                json.dumps(["c0", "c1"]),
+                json.dumps(["bandwidth", "attenuation"]),
+                json.dumps({"c0": {"bandwidth": "1kHz"}, "c1": {"bandwidth": "2kHz"}}),
+            ),
         )
     return TestClient(app)
 

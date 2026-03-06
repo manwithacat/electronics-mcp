@@ -1,4 +1,5 @@
 """MCP tools for circuit simulation (numerical and symbolic)."""
+
 import json
 import uuid
 from electronics_mcp.mcp.server import mcp, get_db, get_config
@@ -7,16 +8,27 @@ from electronics_mcp.engines.simulation.numerical import NumericalSimulator
 from electronics_mcp.engines.simulation.symbolic import SymbolicAnalyzer
 
 
-def _save_result(circuit_id: str, analysis_type: str, parameters: dict, results: dict, plots: list[str] | None = None) -> None:
+def _save_result(
+    circuit_id: str,
+    analysis_type: str,
+    parameters: dict,
+    results: dict,
+    plots: list[str] | None = None,
+) -> None:
     """Save simulation results to the database."""
     db = get_db()
     with db.connect() as conn:
         conn.execute(
             "INSERT INTO simulation_results (id, circuit_id, analysis_type, parameters, results_json, plots) "
             "VALUES (?, ?, ?, ?, ?, ?)",
-            (str(uuid.uuid4()), circuit_id, analysis_type,
-             json.dumps(parameters), json.dumps(results),
-             json.dumps(plots) if plots else None),
+            (
+                str(uuid.uuid4()),
+                circuit_id,
+                analysis_type,
+                json.dumps(parameters),
+                json.dumps(results),
+                json.dumps(plots) if plots else None,
+            ),
         )
 
 
@@ -72,9 +84,13 @@ def dc_sweep(
     plot_path = config.plots_dir / f"dc_sweep_{circuit_id[:8]}.png"
 
     result = sim.dc_sweep(schema, source_id, start, stop, step, output_node, plot_path)
-    _save_result(circuit_id, "dc_sweep",
-                 {"source": source_id, "start": start, "stop": stop, "step": step},
-                 result, [str(plot_path)] if plot_path.exists() else None)
+    _save_result(
+        circuit_id,
+        "dc_sweep",
+        {"source": source_id, "start": start, "stop": stop, "step": step},
+        result,
+        [str(plot_path)] if plot_path.exists() else None,
+    )
 
     lines = [f"DC Sweep: {source_id} from {start} to {stop}"]
     lines.append(f"Output node: {output_node}")
@@ -100,12 +116,20 @@ def ac_analysis(
     config = get_config()
     plot_path = config.plots_dir / f"bode_{circuit_id[:8]}.png"
 
-    result = sim.ac_analysis(schema, start_freq=start_freq, stop_freq=stop_freq,
-                             points_per_decade=points_per_decade,
-                             output_node=output_node, plot_dir=plot_path.parent)
-    _save_result(circuit_id, "ac", {"output_node": output_node,
-                 "start_freq": start_freq, "stop_freq": stop_freq},
-                 result)
+    result = sim.ac_analysis(
+        schema,
+        start_freq=start_freq,
+        stop_freq=stop_freq,
+        points_per_decade=points_per_decade,
+        output_node=output_node,
+        plot_dir=plot_path.parent,
+    )
+    _save_result(
+        circuit_id,
+        "ac",
+        {"output_node": output_node, "start_freq": start_freq, "stop_freq": stop_freq},
+        result,
+    )
 
     lines = ["AC Analysis Results:", ""]
     if "bandwidth_hz" in result:
@@ -140,11 +164,19 @@ def transient_analysis(
     if step_time is None:
         step_time = stop_time / 1000
 
-    result = sim.transient_analysis(schema, duration=stop_time, step_size=step_time,
-                                     output_node=output_node, plot_dir=plot_path.parent)
-    _save_result(circuit_id, "transient",
-                 {"stop_time": stop_time, "output_node": output_node},
-                 result)
+    result = sim.transient_analysis(
+        schema,
+        duration=stop_time,
+        step_size=step_time,
+        output_node=output_node,
+        plot_dir=plot_path.parent,
+    )
+    _save_result(
+        circuit_id,
+        "transient",
+        {"stop_time": stop_time, "output_node": output_node},
+        result,
+    )
 
     lines = ["Transient Analysis Results:", ""]
     if "rise_time" in result:
@@ -179,11 +211,15 @@ def parametric_sweep(
     sim = NumericalSimulator()
     values = json.loads(values_json)
 
-    result = sim.parametric_sweep(schema, component_id, parameter,
-                                  values, analysis_type, output_node)
-    _save_result(circuit_id, "parametric",
-                 {"component": component_id, "parameter": parameter, "values": values},
-                 result)
+    result = sim.parametric_sweep(
+        schema, component_id, parameter, values, analysis_type, output_node
+    )
+    _save_result(
+        circuit_id,
+        "parametric",
+        {"component": component_id, "parameter": parameter, "values": values},
+        result,
+    )
 
     lines = [f"Parametric Sweep: {component_id}.{parameter}", ""]
     for sweep in result.get("sweeps", []):
@@ -214,11 +250,17 @@ def monte_carlo(
     sim = NumericalSimulator()
 
     result = sim.monte_carlo(schema, num_runs, tolerance, analysis_type, output_node)
-    _save_result(circuit_id, "monte_carlo",
-                 {"num_runs": num_runs, "tolerance": tolerance},
-                 result)
+    _save_result(
+        circuit_id,
+        "monte_carlo",
+        {"num_runs": num_runs, "tolerance": tolerance},
+        result,
+    )
 
-    lines = [f"Monte Carlo Analysis ({num_runs} runs, {tolerance*100:.0f}% tolerance):", ""]
+    lines = [
+        f"Monte Carlo Analysis ({num_runs} runs, {tolerance * 100:.0f}% tolerance):",
+        "",
+    ]
     stats = result.get("statistics", {})
     for metric, values in stats.items():
         lines.append(f"  {metric}:")
@@ -286,10 +328,15 @@ def poles_and_zeros(
     config = get_config()
     plot_path = config.plots_dir / f"pz_{circuit_id[:8]}.png"
 
-    result = analyzer.poles_and_zeros(schema, input_node, output_node, plot_dir=plot_path.parent)
-    _save_result(circuit_id, "poles_zeros",
-                 {"input_node": input_node, "output_node": output_node},
-                 result)
+    result = analyzer.poles_and_zeros(
+        schema, input_node, output_node, plot_dir=plot_path.parent
+    )
+    _save_result(
+        circuit_id,
+        "poles_zeros",
+        {"input_node": input_node, "output_node": output_node},
+        result,
+    )
 
     lines = ["Poles and Zeros:", ""]
     lines.append("Poles:")
@@ -361,9 +408,13 @@ def step_response(
     plot_dir = config.plots_dir
 
     result = analyzer.step_response(schema, input_node, output_node, plot_dir=plot_dir)
-    _save_result(circuit_id, "step_response",
-                 {"input_node": input_node, "output_node": output_node},
-                 result, [result["plot_path"]] if "plot_path" in result else None)
+    _save_result(
+        circuit_id,
+        "step_response",
+        {"input_node": input_node, "output_node": output_node},
+        result,
+        [result["plot_path"]] if "plot_path" in result else None,
+    )
 
     lines = ["Step Response:", ""]
     lines.append(f"  Expression: {result.get('expression', 'N/A')}")

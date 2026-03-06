@@ -1,8 +1,10 @@
 import pytest
-import json
 from electronics_mcp.core.database import Database
 from electronics_mcp.mcp.tools_db import (
-    init_project, import_spice_model, export_project, query_db,
+    init_project,
+    import_spice_model,
+    export_project,
+    query_db,
 )
 import electronics_mcp.mcp.server as srv
 
@@ -24,7 +26,8 @@ class TestDBTools:
 
     def test_import_spice_model(self):
         result = import_spice_model(
-            "diode", "1N4148",
+            "diode",
+            "1N4148",
             ".model 1N4148 D(Is=2.52e-9 Rs=0.568)",
             manufacturer="Generic",
             description="Small signal diode",

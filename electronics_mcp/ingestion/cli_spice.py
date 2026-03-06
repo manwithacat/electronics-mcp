@@ -1,4 +1,5 @@
 """CLI wrapper: ingest SPICE model files from a directory."""
+
 import argparse
 import sys
 from pathlib import Path
@@ -12,11 +13,15 @@ def main():
         description="Ingest SPICE .model/.subckt files into the component database.",
     )
     parser.add_argument(
-        "--dir", type=Path, required=True,
+        "--dir",
+        type=Path,
+        required=True,
         help="Directory containing SPICE model files (.lib, .mod, .model, .spice)",
     )
     parser.add_argument(
-        "--db", type=Path, default=Path("electronics.db"),
+        "--db",
+        type=Path,
+        default=Path("electronics.db"),
         help="Database file path (default: electronics.db)",
     )
     args = parser.parse_args()

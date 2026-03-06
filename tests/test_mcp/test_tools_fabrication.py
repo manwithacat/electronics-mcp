@@ -3,8 +3,11 @@ import json
 from electronics_mcp.core.database import Database
 from electronics_mcp.mcp.tools_circuit import define_circuit
 from electronics_mcp.mcp.tools_fabrication import (
-    export_spice_netlist, export_kicad_netlist, export_bom,
-    suggest_components, component_selection_guide,
+    export_spice_netlist,
+    export_kicad_netlist,
+    export_bom,
+    suggest_components,
+    component_selection_guide,
 )
 import electronics_mcp.mcp.server as srv
 
@@ -19,17 +22,32 @@ def reset_server_state(tmp_project):
     srv._db = None
 
 
-RC_FILTER_JSON = json.dumps({
-    "name": "RC Low-Pass",
-    "components": [
-        {"id": "V1", "type": "voltage_source", "subtype": "dc",
-         "parameters": {"voltage": "5V"}, "nodes": ["input", "gnd"]},
-        {"id": "R1", "type": "resistor",
-         "parameters": {"resistance": "10k"}, "nodes": ["input", "output"]},
-        {"id": "C1", "type": "capacitor",
-         "parameters": {"capacitance": "10n"}, "nodes": ["output", "gnd"]},
-    ]
-})
+RC_FILTER_JSON = json.dumps(
+    {
+        "name": "RC Low-Pass",
+        "components": [
+            {
+                "id": "V1",
+                "type": "voltage_source",
+                "subtype": "dc",
+                "parameters": {"voltage": "5V"},
+                "nodes": ["input", "gnd"],
+            },
+            {
+                "id": "R1",
+                "type": "resistor",
+                "parameters": {"resistance": "10k"},
+                "nodes": ["input", "output"],
+            },
+            {
+                "id": "C1",
+                "type": "capacitor",
+                "parameters": {"capacitance": "10n"},
+                "nodes": ["output", "gnd"],
+            },
+        ],
+    }
+)
 
 
 def _create_circuit():

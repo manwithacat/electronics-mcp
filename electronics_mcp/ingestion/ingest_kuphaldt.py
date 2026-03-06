@@ -1,4 +1,5 @@
 """Ingest knowledge from 'Lessons in Electric Circuits' (Kuphaldt) HTML volumes."""
+
 import re
 import json
 import uuid
@@ -61,11 +62,13 @@ class _SectionExtractor(HTMLParser):
 
     def _flush_section(self):
         if self._current_heading and self._current_content:
-            self.sections.append({
-                "title": self._current_heading.strip(),
-                "content": "\n".join(self._current_content),
-                "level": self._heading_level,
-            })
+            self.sections.append(
+                {
+                    "title": self._current_heading.strip(),
+                    "content": "\n".join(self._current_content),
+                    "level": self._heading_level,
+                }
+            )
         self._current_content = []
 
     def close(self):
@@ -78,7 +81,7 @@ def _extract_formulas(text: str) -> list[dict]:
     formulas = []
     # Match patterns like "V = IR", "f = 1/(2*pi*R*C)", etc.
     formula_re = re.compile(
-        r'([A-Z][a-z_]*)\s*=\s*([^.;,\n]{3,50}(?:[\*/\+\-\(\)][^.;,\n]{1,30})*)'
+        r"([A-Z][a-z_]*)\s*=\s*([^.;,\n]{3,50}(?:[\*/\+\-\(\)][^.;,\n]{1,30})*)"
     )
     for match in formula_re.finditer(text):
         name = match.group(1).strip()
@@ -101,7 +104,7 @@ def _difficulty_from_depth(volume: str, level: int) -> str:
 
 def _topic_slug(title: str) -> str:
     """Convert a heading to a topic slug."""
-    slug = re.sub(r'[^a-z0-9]+', '_', title.lower()).strip('_')
+    slug = re.sub(r"[^a-z0-9]+", "_", title.lower()).strip("_")
     return slug[:60]
 
 
@@ -156,15 +159,25 @@ def ingest_kuphaldt(
                     "INSERT INTO knowledge (id, category, topic, title, content, "
                     "formulas, related_topics, difficulty, source) "
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'kuphaldt')",
-                    (entry_id, category, topic, section["title"],
-                     section["content"], json.dumps(formulas),
-                     json.dumps([]), difficulty),
+                    (
+                        entry_id,
+                        category,
+                        topic,
+                        section["title"],
+                        section["content"],
+                        json.dumps(formulas),
+                        json.dumps([]),
+                        difficulty,
+                    ),
                 )
                 created = True
 
             if created:
                 record_provenance(
-                    db, "knowledge", entry_id, "kuphaldt",
+                    db,
+                    "knowledge",
+                    entry_id,
+                    "kuphaldt",
                     source_url="https://www.allaboutcircuits.com/textbook/",
                     licence="Design Science License",
                     original_path=str(html_file),

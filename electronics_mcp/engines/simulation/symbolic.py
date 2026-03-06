@@ -1,4 +1,5 @@
 """Symbolic circuit analysis using lcapy."""
+
 import warnings
 from pathlib import Path
 
@@ -69,8 +70,9 @@ class SymbolicAnalyzer:
             return f"{comp.id} {n1} {n2} {{{val}}}"
 
         elif comp.type == "voltage_source":
-            amp = self._lcapy_value(comp.parameters.get("amplitude",
-                                    comp.parameters.get("voltage", "1")))
+            amp = self._lcapy_value(
+                comp.parameters.get("amplitude", comp.parameters.get("voltage", "1"))
+            )
             return f"{comp.id} {n1} {n2} {{{amp}}}"
 
         elif comp.type == "current_source":
@@ -152,14 +154,24 @@ class SymbolicAnalyzer:
             poles = H.poles()
             zeros = H.zeros()
 
-        poles_list = [{"value": str(k), "multiplicity": int(float(str(v)))} for k, v in poles.items()]
-        zeros_list = [{"value": str(k), "multiplicity": int(float(str(v)))} for k, v in zeros.items()]
+        poles_list = [
+            {"value": str(k), "multiplicity": int(float(str(v)))}
+            for k, v in poles.items()
+        ]
+        zeros_list = [
+            {"value": str(k), "multiplicity": int(float(str(v)))}
+            for k, v in zeros.items()
+        ]
 
         result = {
             "poles": poles_list,
             "zeros": zeros_list,
-            "poles_latex": [sympy.latex(sympy.sympify(str(p["value"]))) for p in poles_list],
-            "zeros_latex": [sympy.latex(sympy.sympify(str(z["value"]))) for z in zeros_list],
+            "poles_latex": [
+                sympy.latex(sympy.sympify(str(p["value"]))) for p in poles_list
+            ],
+            "zeros_latex": [
+                sympy.latex(sympy.sympify(str(z["value"]))) for z in zeros_list
+            ],
         }
 
         if plot_dir is not None:
@@ -255,6 +267,7 @@ class SymbolicAnalyzer:
             H = circuit.transfer(in_node, 0, out_node, 0)
             # Step response: inverse Laplace of H(s)/s
             from lcapy import s as lcapy_s
+
             step = (H / lcapy_s).inverse_laplace(causal=True)
 
         expr = step.expr
@@ -275,6 +288,7 @@ class SymbolicAnalyzer:
     def _plot_step_response(self, expr, output_path):
         """Generate a step response plot."""
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
         import numpy as np
@@ -293,11 +307,23 @@ class SymbolicAnalyzer:
                 y = np.real(f(t))
                 ax.plot(t, y, "b-", linewidth=2)
             except Exception:
-                ax.text(0.5, 0.5, str(expr), transform=ax.transAxes,
-                        ha="center", fontsize=10)
+                ax.text(
+                    0.5,
+                    0.5,
+                    str(expr),
+                    transform=ax.transAxes,
+                    ha="center",
+                    fontsize=10,
+                )
         else:
-            ax.text(0.5, 0.5, f"${sympy.latex(expr)}$", transform=ax.transAxes,
-                    ha="center", fontsize=14)
+            ax.text(
+                0.5,
+                0.5,
+                f"${sympy.latex(expr)}$",
+                transform=ax.transAxes,
+                ha="center",
+                fontsize=14,
+            )
 
         ax.set_xlabel("Time (s)")
         ax.set_ylabel("Response")
@@ -311,6 +337,7 @@ class SymbolicAnalyzer:
     def _plot_pole_zero(self, poles, zeros, output_path):
         """Generate a pole-zero plot."""
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
@@ -327,8 +354,14 @@ class SymbolicAnalyzer:
         for z in zeros:
             try:
                 val = complex(sympy.sympify(z["value"]))
-                ax.plot(val.real, val.imag, "bo", markersize=10, markeredgewidth=2,
-                        fillstyle="none")
+                ax.plot(
+                    val.real,
+                    val.imag,
+                    "bo",
+                    markersize=10,
+                    markeredgewidth=2,
+                    fillstyle="none",
+                )
             except (TypeError, ValueError):
                 pass
 

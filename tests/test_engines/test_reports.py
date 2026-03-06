@@ -1,5 +1,3 @@
-import pytest
-from pathlib import Path
 from electronics_mcp.core.schema import CircuitSchema, ComponentBase
 from electronics_mcp.engines.rendering.reports import generate_markdown, generate_pdf
 
@@ -8,12 +6,25 @@ RC_FILTER = CircuitSchema(
     name="RC Low-Pass",
     description="First-order low-pass filter",
     components=[
-        ComponentBase(id="V1", type="voltage_source", subtype="ac",
-                      parameters={"amplitude": "1V"}, nodes=["input", "gnd"]),
-        ComponentBase(id="R1", type="resistor",
-                      parameters={"resistance": "10k"}, nodes=["input", "output"]),
-        ComponentBase(id="C1", type="capacitor",
-                      parameters={"capacitance": "10n"}, nodes=["output", "gnd"]),
+        ComponentBase(
+            id="V1",
+            type="voltage_source",
+            subtype="ac",
+            parameters={"amplitude": "1V"},
+            nodes=["input", "gnd"],
+        ),
+        ComponentBase(
+            id="R1",
+            type="resistor",
+            parameters={"resistance": "10k"},
+            nodes=["input", "output"],
+        ),
+        ComponentBase(
+            id="C1",
+            type="capacitor",
+            parameters={"capacitance": "10n"},
+            nodes=["output", "gnd"],
+        ),
     ],
 )
 
@@ -32,7 +43,8 @@ class TestMarkdownReport:
             {"analysis_type": "dc", "node_voltages": {"output": 5.0, "input": 10.0}},
         ]
         path = generate_markdown(
-            RC_FILTER, tmp_path / "report.md",
+            RC_FILTER,
+            tmp_path / "report.md",
             simulation_results=sim_results,
         )
         content = path.read_text()
@@ -40,7 +52,8 @@ class TestMarkdownReport:
 
     def test_includes_warnings(self, tmp_path):
         path = generate_markdown(
-            RC_FILTER, tmp_path / "report.md",
+            RC_FILTER,
+            tmp_path / "report.md",
             validation_warnings=["Floating node: test_node"],
         )
         content = path.read_text()

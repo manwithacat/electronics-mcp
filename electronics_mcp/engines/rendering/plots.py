@@ -1,8 +1,10 @@
 """Plot generation functions for simulation results."""
+
 from pathlib import Path
 
 import numpy as np
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
@@ -86,8 +88,14 @@ def draw_phasor(
             xytext=(0, 0),
             arrowprops=dict(arrowstyle="->", color=colors[i], lw=2),
         )
-        ax.text(angle_rad, p["magnitude"] * 1.1, p["label"],
-                ha="center", fontsize=9, color=colors[i])
+        ax.text(
+            angle_rad,
+            p["magnitude"] * 1.1,
+            p["label"],
+            ha="center",
+            fontsize=9,
+            color=colors[i],
+        )
 
     ax.set_title(title, pad=20)
     plt.tight_layout()
@@ -115,8 +123,14 @@ def draw_pole_zero(
         ax.plot(p["real"], p["imag"], "rx", markersize=12, markeredgewidth=2)
 
     for z in zeros:
-        ax.plot(z["real"], z["imag"], "bo", markersize=10, markeredgewidth=2,
-                fillstyle="none")
+        ax.plot(
+            z["real"],
+            z["imag"],
+            "bo",
+            markersize=10,
+            markeredgewidth=2,
+            fillstyle="none",
+        )
 
     ax.axhline(y=0, color="k", linewidth=0.5)
     ax.axvline(x=0, color="k", linewidth=0.5)
@@ -128,7 +142,9 @@ def draw_pole_zero(
 
     # Add legend
     ax.plot([], [], "rx", markersize=10, markeredgewidth=2, label="Poles")
-    ax.plot([], [], "bo", markersize=8, markeredgewidth=2, fillstyle="none", label="Zeros")
+    ax.plot(
+        [], [], "bo", markersize=8, markeredgewidth=2, fillstyle="none", label="Zeros"
+    )
     ax.legend()
 
     plt.tight_layout()

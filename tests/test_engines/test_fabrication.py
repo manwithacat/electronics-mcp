@@ -1,6 +1,4 @@
-import pytest
 import csv
-from pathlib import Path
 from electronics_mcp.core.schema import CircuitSchema, ComponentBase
 from electronics_mcp.core.database import Database
 from electronics_mcp.engines.fabrication.spice_netlist import generate_spice_netlist
@@ -12,12 +10,25 @@ from electronics_mcp.engines.fabrication.components import ComponentSuggester
 RC_FILTER = CircuitSchema(
     name="RC Low-Pass",
     components=[
-        ComponentBase(id="V1", type="voltage_source", subtype="dc",
-                      parameters={"voltage": "5V"}, nodes=["input", "gnd"]),
-        ComponentBase(id="R1", type="resistor",
-                      parameters={"resistance": "10k"}, nodes=["input", "output"]),
-        ComponentBase(id="C1", type="capacitor",
-                      parameters={"capacitance": "10n"}, nodes=["output", "gnd"]),
+        ComponentBase(
+            id="V1",
+            type="voltage_source",
+            subtype="dc",
+            parameters={"voltage": "5V"},
+            nodes=["input", "gnd"],
+        ),
+        ComponentBase(
+            id="R1",
+            type="resistor",
+            parameters={"resistance": "10k"},
+            nodes=["input", "output"],
+        ),
+        ComponentBase(
+            id="C1",
+            type="capacitor",
+            parameters={"capacitance": "10n"},
+            nodes=["output", "gnd"],
+        ),
     ],
 )
 

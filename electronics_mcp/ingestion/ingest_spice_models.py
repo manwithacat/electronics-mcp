@@ -1,4 +1,5 @@
 """Ingest SPICE .model and .subckt definitions into the component database."""
+
 import re
 import json
 import uuid
@@ -30,14 +31,14 @@ def parse_model_statement(text: str) -> dict | None:
     """
     # Match .model name type (params)
     pattern = re.compile(
-        r'\.model\s+(\S+)\s+(\S+)\s*\(([^)]*)\)',
+        r"\.model\s+(\S+)\s+(\S+)\s*\(([^)]*)\)",
         re.IGNORECASE | re.DOTALL,
     )
     match = pattern.search(text)
     if not match:
         # Try without parentheses
         pattern2 = re.compile(
-            r'\.model\s+(\S+)\s+(\S+)\s+(.*?)(?:\n\.|\Z)',
+            r"\.model\s+(\S+)\s+(\S+)\s+(.*?)(?:\n\.|\Z)",
             re.IGNORECASE | re.DOTALL,
         )
         match = pattern2.search(text)
@@ -70,7 +71,7 @@ def parse_subckt_statement(text: str) -> dict | None:
     .ends
     """
     pattern = re.compile(
-        r'\.subckt\s+(\S+)\s+(.*?)\n(.*?)\.ends',
+        r"\.subckt\s+(\S+)\s+(.*?)\n(.*?)\.ends",
         re.IGNORECASE | re.DOTALL,
     )
     match = pattern.search(text)
@@ -93,7 +94,7 @@ def _parse_params(text: str) -> dict:
     """Parse SPICE parameter string into dict."""
     params = {}
     # Match key=value pairs
-    for match in re.finditer(r'(\w+)\s*=\s*([^\s,)+]+)', text):
+    for match in re.finditer(r"(\w+)\s*=\s*([^\s,)+]+)", text):
         key = match.group(1)
         value = match.group(2)
         try:
@@ -114,7 +115,7 @@ def ingest_spice_file(file_path: Path | str, db: Database) -> dict:
 
     # Extract .model statements
     model_pattern = re.compile(
-        r'(\.model\s+\S+\s+\S+\s*(?:\([^)]*\)|[^\n]*(?:\n\+[^\n]*)*))',
+        r"(\.model\s+\S+\s+\S+\s*(?:\([^)]*\)|[^\n]*(?:\n\+[^\n]*)*))",
         re.IGNORECASE,
     )
     for match in model_pattern.finditer(content):
@@ -137,16 +138,23 @@ def ingest_spice_file(file_path: Path | str, db: Database) -> dict:
             conn.execute(
                 "INSERT INTO component_models (id, type, part_number, description, "
                 "parameters, spice_model, source) VALUES (?, ?, ?, ?, ?, ?, 'spice_import')",
-                (model_id, parsed["component_type"], parsed["name"],
-                 f"SPICE {parsed['model_type']} model",
-                 json.dumps(parsed["parameters"]),
-                 parsed["raw_text"]),
+                (
+                    model_id,
+                    parsed["component_type"],
+                    parsed["name"],
+                    f"SPICE {parsed['model_type']} model",
+                    json.dumps(parsed["parameters"]),
+                    parsed["raw_text"],
+                ),
             )
             created = True
 
         if created:
             record_provenance(
-                db, "component_models", model_id, "spice_import",
+                db,
+                "component_models",
+                model_id,
+                "spice_import",
                 licence="varies",
                 original_path=str(file_path),
                 notes=f"SPICE {parsed['model_type']} model: {parsed['name']}",
@@ -155,7 +163,7 @@ def ingest_spice_file(file_path: Path | str, db: Database) -> dict:
 
     # Extract .subckt definitions
     subckt_pattern = re.compile(
-        r'(\.subckt\s+.*?\.ends\s*\S*)',
+        r"(\.subckt\s+.*?\.ends\s*\S*)",
         re.IGNORECASE | re.DOTALL,
     )
     for match in subckt_pattern.finditer(content):
@@ -178,15 +186,23 @@ def ingest_spice_file(file_path: Path | str, db: Database) -> dict:
             conn.execute(
                 "INSERT INTO subcircuits (id, name, description, schema_json, "
                 "ports, design_notes, source) VALUES (?, ?, ?, ?, ?, ?, 'spice_import')",
-                (sc_id, parsed["name"], f"Imported from {file_path.name}",
-                 json.dumps(schema), json.dumps(parsed["nodes"]),
-                 parsed["raw_text"]),
+                (
+                    sc_id,
+                    parsed["name"],
+                    f"Imported from {file_path.name}",
+                    json.dumps(schema),
+                    json.dumps(parsed["nodes"]),
+                    parsed["raw_text"],
+                ),
             )
             created = True
 
         if created:
             record_provenance(
-                db, "subcircuits", sc_id, "spice_import",
+                db,
+                "subcircuits",
+                sc_id,
+                "spice_import",
                 licence="varies",
                 original_path=str(file_path),
                 notes=f"SPICE subcircuit: {parsed['name']}",

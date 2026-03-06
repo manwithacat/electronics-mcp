@@ -1,7 +1,7 @@
 """MCP tools for database and project management."""
+
 import json
 from electronics_mcp.mcp.server import mcp, get_db, get_config
-from electronics_mcp.core.database import Database
 
 
 @mcp.tool()
@@ -38,6 +38,7 @@ def import_spice_model(
         parameters_json: JSON object with component parameters
     """
     import uuid
+
     db = get_db()
     model_id = str(uuid.uuid4())
 
@@ -46,8 +47,15 @@ def import_spice_model(
             "INSERT INTO component_models (id, type, manufacturer, part_number, "
             "description, parameters, spice_model, source) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, 'imported')",
-            (model_id, model_type, manufacturer, part_number,
-             description, parameters_json, spice_model),
+            (
+                model_id,
+                model_type,
+                manufacturer,
+                part_number,
+                description,
+                parameters_json,
+                spice_model,
+            ),
         )
     return f"SPICE model '{part_number}' imported with ID: {model_id}"
 
@@ -75,10 +83,12 @@ def export_project(format: str = "json") -> str:
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(export_data, indent=2, default=str))
-    return f"Project exported to {output_path}\n" \
-           f"Circuits: {len(export_data['circuits'])}, " \
-           f"Knowledge: {len(export_data['knowledge'])}, " \
-           f"Simulations: {len(export_data['simulations'])}"
+    return (
+        f"Project exported to {output_path}\n"
+        f"Circuits: {len(export_data['circuits'])}, "
+        f"Knowledge: {len(export_data['knowledge'])}, "
+        f"Simulations: {len(export_data['simulations'])}"
+    )
 
 
 @mcp.tool()

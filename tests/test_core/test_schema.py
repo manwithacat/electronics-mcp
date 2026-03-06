@@ -1,8 +1,12 @@
 import pytest
 from electronics_mcp.core.schema import (
-    CircuitSchema, ComponentBase, SubcircuitInstance,
-    DesignIntent, Probe, CircuitModification, ComponentUpdate,
-    VALID_COMPONENT_TYPES,
+    CircuitSchema,
+    ComponentBase,
+    SubcircuitInstance,
+    DesignIntent,
+    Probe,
+    CircuitModification,
+    ComponentUpdate,
 )
 
 
@@ -11,9 +15,12 @@ class TestCircuitSchema:
         circuit = CircuitSchema(
             name="Test",
             components=[
-                ComponentBase(id="R1", type="resistor",
-                              parameters={"resistance": "10k"},
-                              nodes=["input", "output"]),
+                ComponentBase(
+                    id="R1",
+                    type="resistor",
+                    parameters={"resistance": "10k"},
+                    nodes=["input", "output"],
+                ),
             ],
         )
         assert circuit.name == "Test"
@@ -29,15 +36,25 @@ class TestCircuitSchema:
                 target_specs={"cutoff_frequency_hz": 1590},
             ),
             components=[
-                ComponentBase(id="V1", type="voltage_source", subtype="ac",
-                              parameters={"amplitude": "1V", "offset": "0V"},
-                              nodes=["input", "gnd"]),
-                ComponentBase(id="R1", type="resistor",
-                              parameters={"resistance": "10k"},
-                              nodes=["input", "output"]),
-                ComponentBase(id="C1", type="capacitor",
-                              parameters={"capacitance": "10n"},
-                              nodes=["output", "gnd"]),
+                ComponentBase(
+                    id="V1",
+                    type="voltage_source",
+                    subtype="ac",
+                    parameters={"amplitude": "1V", "offset": "0V"},
+                    nodes=["input", "gnd"],
+                ),
+                ComponentBase(
+                    id="R1",
+                    type="resistor",
+                    parameters={"resistance": "10k"},
+                    nodes=["input", "output"],
+                ),
+                ComponentBase(
+                    id="C1",
+                    type="capacitor",
+                    parameters={"capacitance": "10n"},
+                    nodes=["output", "gnd"],
+                ),
             ],
             probes=[
                 Probe(node="output", label="Vout"),
@@ -55,7 +72,11 @@ class TestCircuitSchema:
                     id="U_BUCK",
                     reference="buck_output_stage",
                     parameters={"inductance": "22u", "capacitance": "47u"},
-                    port_connections={"vin": "switch_node", "vout": "output", "gnd": "gnd"},
+                    port_connections={
+                        "vin": "switch_node",
+                        "vout": "output",
+                        "gnd": "gnd",
+                    },
                 ),
             ],
         )
@@ -63,21 +84,26 @@ class TestCircuitSchema:
 
     def test_invalid_component_type_rejected(self):
         with pytest.raises(ValueError):
-            ComponentBase(id="X1", type="invalid_type",
-                          parameters={}, nodes=["a", "b"])
+            ComponentBase(id="X1", type="invalid_type", parameters={}, nodes=["a", "b"])
 
     def test_component_needs_at_least_two_nodes(self):
         with pytest.raises(ValueError):
-            ComponentBase(id="R1", type="resistor",
-                          parameters={"resistance": "10k"}, nodes=["a"])
+            ComponentBase(
+                id="R1", type="resistor", parameters={"resistance": "10k"}, nodes=["a"]
+            )
 
 
 class TestCircuitModification:
     def test_add_component(self):
         mod = CircuitModification(
-            add=[ComponentBase(id="C2", type="capacitor",
-                               parameters={"capacitance": "100n"},
-                               nodes=["output", "gnd"])],
+            add=[
+                ComponentBase(
+                    id="C2",
+                    type="capacitor",
+                    parameters={"capacitance": "100n"},
+                    nodes=["output", "gnd"],
+                )
+            ],
         )
         assert len(mod.add) == 1
 

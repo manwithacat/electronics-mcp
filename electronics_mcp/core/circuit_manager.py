@@ -1,13 +1,16 @@
 """Circuit CRUD operations with versioning and validation."""
+
 import json
 import uuid
 from collections import Counter
 
 from electronics_mcp.core.database import Database
 from electronics_mcp.core.schema import (
-    CircuitSchema, CircuitModification, ComponentBase,
+    CircuitSchema,
+    CircuitModification,
+    ComponentBase,
 )
-from electronics_mcp.core.units import parse_value, format_value
+from electronics_mcp.core.units import parse_value
 
 
 class CircuitManager:
@@ -115,10 +118,18 @@ class CircuitManager:
     def delete(self, circuit_id: str):
         """Remove a circuit and all related data."""
         with self.db.connect() as conn:
-            conn.execute("DELETE FROM simulation_results WHERE circuit_id = ?", (circuit_id,))
-            conn.execute("DELETE FROM circuit_versions WHERE circuit_id = ?", (circuit_id,))
-            conn.execute("DELETE FROM project_notes WHERE circuit_id = ?", (circuit_id,))
-            conn.execute("DELETE FROM design_decisions WHERE circuit_id = ?", (circuit_id,))
+            conn.execute(
+                "DELETE FROM simulation_results WHERE circuit_id = ?", (circuit_id,)
+            )
+            conn.execute(
+                "DELETE FROM circuit_versions WHERE circuit_id = ?", (circuit_id,)
+            )
+            conn.execute(
+                "DELETE FROM project_notes WHERE circuit_id = ?", (circuit_id,)
+            )
+            conn.execute(
+                "DELETE FROM design_decisions WHERE circuit_id = ?", (circuit_id,)
+            )
             conn.execute("DELETE FROM circuits WHERE id = ?", (circuit_id,))
 
     def validate(self, circuit_id: str) -> list[str]:
@@ -135,7 +146,9 @@ class CircuitManager:
         # Check for floating nodes (connected to only one component)
         for node, count in node_counts.items():
             if count < 2 and node != schema.ground_node:
-                warnings.append(f"Floating/unconnected node: '{node}' (only 1 connection)")
+                warnings.append(
+                    f"Floating/unconnected node: '{node}' (only 1 connection)"
+                )
 
         # Check for ground node
         if schema.ground_node not in node_counts and schema.components:
@@ -221,8 +234,6 @@ class CircuitManager:
 
         sub_schema = json.loads(row["schema_json"])
         sub_params = json.loads(row["parameters"]) if row["parameters"] else []
-        sub_ports = json.loads(row["ports"]) if row["ports"] else []
-
         # Build parameter map: param_name -> value (from instance or defaults)
         param_map = {}
         for p in sub_params:
@@ -246,14 +257,18 @@ class CircuitManager:
                     new_params[k] = v
 
             # Map subcircuit nodes to circuit nodes
-            new_nodes = [port_map.get(n, f"{inst.id}_{n}") for n in comp_data.get("nodes", [])]
+            new_nodes = [
+                port_map.get(n, f"{inst.id}_{n}") for n in comp_data.get("nodes", [])
+            ]
 
-            components.append(ComponentBase(
-                id=new_id,
-                type=comp_data["type"],
-                parameters=new_params,
-                nodes=new_nodes,
-            ))
+            components.append(
+                ComponentBase(
+                    id=new_id,
+                    type=comp_data["type"],
+                    parameters=new_params,
+                    nodes=new_nodes,
+                )
+            )
 
         return components
 
@@ -285,13 +300,17 @@ class CircuitManager:
                 v2 = comp.parameters.get("v2", "5")
                 rise = comp.parameters.get("rise_time", "1n")
                 pw = comp.parameters.get("pulse_width", "10m")
-                return (f"V{comp.id.lstrip('V')} {nodes_str} "
-                        f"PULSE({self._spice_value(v1)} {self._spice_value(v2)} "
-                        f"0 {self._spice_value(rise)} {self._spice_value(rise)} "
-                        f"{self._spice_value(pw)} {self._spice_value(pw)})")
+                return (
+                    f"V{comp.id.lstrip('V')} {nodes_str} "
+                    f"PULSE({self._spice_value(v1)} {self._spice_value(v2)} "
+                    f"0 {self._spice_value(rise)} {self._spice_value(rise)} "
+                    f"{self._spice_value(pw)} {self._spice_value(pw)})"
+                )
             else:
                 voltage = comp.parameters.get("voltage", "0V")
-                return f"V{comp.id.lstrip('V')} {nodes_str} {self._spice_value(voltage)}"
+                return (
+                    f"V{comp.id.lstrip('V')} {nodes_str} {self._spice_value(voltage)}"
+                )
 
         elif comp.type == "current_source":
             val = comp.parameters.get("current", "1m")

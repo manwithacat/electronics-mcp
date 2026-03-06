@@ -1,4 +1,3 @@
-import pytest
 import sqlite3
 from electronics_mcp.core.database import Database
 
@@ -9,9 +8,12 @@ class TestDatabase:
         db.initialize()
 
         conn = sqlite3.connect(tmp_project.db_path)
-        tables = [r[0] for r in conn.execute(
-            "SELECT name FROM sqlite_master WHERE type='table'"
-        ).fetchall()]
+        tables = [
+            r[0]
+            for r in conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            ).fetchall()
+        ]
 
         assert "circuits" in tables
         assert "circuit_versions" in tables
@@ -42,5 +44,7 @@ class TestDatabase:
         db = Database(tmp_project.db_path)
         db.initialize(seed=True)
         with db.connect() as conn:
-            count = conn.execute("SELECT COUNT(*) FROM component_categories").fetchone()[0]
+            count = conn.execute(
+                "SELECT COUNT(*) FROM component_categories"
+            ).fetchone()[0]
             assert count > 0  # Seed data populated categories

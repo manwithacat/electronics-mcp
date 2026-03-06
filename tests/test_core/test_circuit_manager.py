@@ -1,8 +1,12 @@
 import pytest
-import json
 from electronics_mcp.core.database import Database
 from electronics_mcp.core.circuit_manager import CircuitManager
-from electronics_mcp.core.schema import CircuitSchema, ComponentBase, CircuitModification, ComponentUpdate
+from electronics_mcp.core.schema import (
+    CircuitSchema,
+    ComponentBase,
+    CircuitModification,
+    ComponentUpdate,
+)
 
 
 @pytest.fixture
@@ -16,12 +20,25 @@ RC_FILTER = CircuitSchema(
     name="RC Low-Pass",
     description="Test filter",
     components=[
-        ComponentBase(id="V1", type="voltage_source", subtype="ac",
-                      parameters={"amplitude": "1V"}, nodes=["input", "gnd"]),
-        ComponentBase(id="R1", type="resistor",
-                      parameters={"resistance": "10k"}, nodes=["input", "output"]),
-        ComponentBase(id="C1", type="capacitor",
-                      parameters={"capacitance": "10n"}, nodes=["output", "gnd"]),
+        ComponentBase(
+            id="V1",
+            type="voltage_source",
+            subtype="ac",
+            parameters={"amplitude": "1V"},
+            nodes=["input", "gnd"],
+        ),
+        ComponentBase(
+            id="R1",
+            type="resistor",
+            parameters={"resistance": "10k"},
+            nodes=["input", "output"],
+        ),
+        ComponentBase(
+            id="C1",
+            type="capacitor",
+            parameters={"capacitance": "10n"},
+            nodes=["output", "gnd"],
+        ),
     ],
 )
 
@@ -70,15 +87,19 @@ class TestCircuitManager:
         schema = CircuitSchema(
             name="Bad Circuit",
             components=[
-                ComponentBase(id="R1", type="resistor",
-                              parameters={"resistance": "10k"},
-                              nodes=["input", "floating_node"]),
+                ComponentBase(
+                    id="R1",
+                    type="resistor",
+                    parameters={"resistance": "10k"},
+                    nodes=["input", "floating_node"],
+                ),
             ],
         )
         circuit_id = cm.create(schema)
         warnings = cm.validate(circuit_id)
-        assert any("floating" in w.lower() or "unconnected" in w.lower()
-                    for w in warnings)
+        assert any(
+            "floating" in w.lower() or "unconnected" in w.lower() for w in warnings
+        )
 
     def test_get_version_history(self, cm):
         circuit_id = cm.create(RC_FILTER)

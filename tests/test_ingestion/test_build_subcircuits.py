@@ -1,7 +1,7 @@
-import pytest
 from electronics_mcp.core.database import Database
 from electronics_mcp.ingestion.build_subcircuits import (
-    build_subcircuits, STANDARD_SUBCIRCUITS,
+    build_subcircuits,
+    STANDARD_SUBCIRCUITS,
 )
 
 
@@ -29,26 +29,40 @@ class TestBuildSubcircuits:
     def test_custom_definitions(self, tmp_path):
         db = Database(tmp_path / "test.db")
         db.initialize()
-        custom = [{
-            "name": "test_divider",
-            "category": "passive",
-            "description": "Test",
-            "ports": ["in", "out", "gnd"],
-            "parameters": {},
-            "schema": {"name": "test_divider", "components": [
-                {"id": "R1", "type": "resistor",
-                 "parameters": {"resistance": "1k"}, "nodes": ["in", "out"]},
-                {"id": "R2", "type": "resistor",
-                 "parameters": {"resistance": "1k"}, "nodes": ["out", "gnd"]},
-            ]},
-            "design_notes": "Test only.",
-        }]
+        custom = [
+            {
+                "name": "test_divider",
+                "category": "passive",
+                "description": "Test",
+                "ports": ["in", "out", "gnd"],
+                "parameters": {},
+                "schema": {
+                    "name": "test_divider",
+                    "components": [
+                        {
+                            "id": "R1",
+                            "type": "resistor",
+                            "parameters": {"resistance": "1k"},
+                            "nodes": ["in", "out"],
+                        },
+                        {
+                            "id": "R2",
+                            "type": "resistor",
+                            "parameters": {"resistance": "1k"},
+                            "nodes": ["out", "gnd"],
+                        },
+                    ],
+                },
+                "design_notes": "Test only.",
+            }
+        ]
         stats = build_subcircuits(db, custom)
         assert stats["created"] == 1
 
     def test_all_standard_schemas_valid(self):
         """Verify all standard subcircuit schemas pass Pydantic validation."""
         from electronics_mcp.core.schema import CircuitSchema
+
         for defn in STANDARD_SUBCIRCUITS:
             schema = CircuitSchema.model_validate(defn["schema"])
             assert len(schema.components) > 0

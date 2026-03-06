@@ -1,8 +1,10 @@
-import pytest
 from electronics_mcp.core.database import Database
 from electronics_mcp.ingestion.qa import (
-    check_knowledge, check_components, check_subcircuits,
-    check_formulas, run_qa,
+    check_knowledge,
+    check_components,
+    check_subcircuits,
+    check_formulas,
+    run_qa,
 )
 from electronics_mcp.ingestion.build_design_rules import build_design_rules
 from electronics_mcp.ingestion.build_formulas import build_formulas
@@ -36,6 +38,7 @@ class TestQAChecks:
         db = Database(tmp_path / "test.db")
         db.initialize()
         import json
+
         with db.connect() as conn:
             conn.execute(
                 "INSERT INTO component_models (id, type, part_number, description, "

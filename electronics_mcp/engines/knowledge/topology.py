@@ -1,4 +1,5 @@
 """Topology explainer -- provides structured explanations of circuit topologies."""
+
 from electronics_mcp.core.database import Database
 from electronics_mcp.engines.knowledge.manager import KnowledgeManager
 

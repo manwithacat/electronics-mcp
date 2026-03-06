@@ -1,4 +1,5 @@
 """MCP resource URIs for electronics knowledge."""
+
 import json
 from electronics_mcp.mcp.server import mcp, get_db
 from electronics_mcp.engines.knowledge.manager import KnowledgeManager

@@ -1,4 +1,5 @@
 """Numerical circuit simulation using PySpice/Ngspice."""
+
 import random
 import warnings
 from pathlib import Path
@@ -19,8 +20,9 @@ class NumericalSimulator:
         circuit = Circuit(schema.name)
 
         for comp in schema.components:
-            nodes = [str(circuit.gnd) if n == schema.ground_node else n
-                     for n in comp.nodes]
+            nodes = [
+                str(circuit.gnd) if n == schema.ground_node else n for n in comp.nodes
+            ]
             self._add_component(circuit, comp, nodes)
 
         return circuit
@@ -59,10 +61,16 @@ class NumericalSimulator:
                 pw = parse_value(comp.parameters.get("pulse_width", "0.01"))
                 period = pw * 2
                 circuit.PulseVoltageSource(
-                    suffix, nodes[0], nodes[1],
-                    initial_value=v1, pulsed_value=v2,
-                    delay_time=0, rise_time=rise, fall_time=rise,
-                    pulse_width=pw, period=period,
+                    suffix,
+                    nodes[0],
+                    nodes[1],
+                    initial_value=v1,
+                    pulsed_value=v2,
+                    delay_time=0,
+                    rise_time=rise,
+                    fall_time=rise,
+                    pulse_width=pw,
+                    period=period,
                 )
             else:
                 voltage = parse_value(comp.parameters.get("voltage", "0"))
@@ -146,8 +154,9 @@ class NumericalSimulator:
 
         # Generate plot if directory provided
         if plot_dir is not None:
-            self._plot_bode(frequency, magnitude_db, phase_deg,
-                            schema.name, plot_dir / "bode.png")
+            self._plot_bode(
+                frequency, magnitude_db, phase_deg, schema.name, plot_dir / "bode.png"
+            )
             result["plot_path"] = str(plot_dir / "bode.png")
 
         return result
@@ -201,7 +210,9 @@ class NumericalSimulator:
 
         # Overshoot
         if final_value > 0 and max_value > final_value:
-            result["overshoot_pct"] = float((max_value - final_value) / final_value * 100)
+            result["overshoot_pct"] = float(
+                (max_value - final_value) / final_value * 100
+            )
 
         # Generate plot
         if plot_dir is not None:
@@ -213,6 +224,7 @@ class NumericalSimulator:
     def _plot_bode(self, freq, mag_db, phase_deg, title, output_path):
         """Generate a Bode plot."""
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
@@ -237,6 +249,7 @@ class NumericalSimulator:
     def _plot_transient(self, time, voltage, title, output_path):
         """Generate a transient response plot."""
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
@@ -276,7 +289,11 @@ class NumericalSimulator:
             simulator = circuit.simulator()
             analysis = simulator.dc(**{f"V{suffix}": slice(start, stop, step)})
 
-        sweep_values = np.array(analysis.nodes[f"v-sweep"], dtype=float) if hasattr(analysis, 'sweep') else np.arange(start, stop + step, step)
+        sweep_values = (
+            np.array(analysis.nodes["v-sweep"], dtype=float)
+            if hasattr(analysis, "sweep")
+            else np.arange(start, stop + step, step)
+        )
         output_values = np.array(analysis.nodes[output_node], dtype=float)
 
         # Handle the sweep values from the analysis
@@ -291,8 +308,13 @@ class NumericalSimulator:
         }
 
         if plot_dir is not None:
-            self._plot_dc_sweep(sweep_values, output_values,
-                                source_id, schema.name, plot_dir / "dc_sweep.png")
+            self._plot_dc_sweep(
+                sweep_values,
+                output_values,
+                source_id,
+                schema.name,
+                plot_dir / "dc_sweep.png",
+            )
             result["plot_path"] = str(plot_dir / "dc_sweep.png")
 
         return result
@@ -361,8 +383,11 @@ class NumericalSimulator:
             random.seed(seed)
 
         passive_types = {"resistor", "capacitor", "inductor"}
-        param_keys = {"resistor": "resistance", "capacitor": "capacitance",
-                       "inductor": "inductance"}
+        param_keys = {
+            "resistor": "resistance",
+            "capacitor": "capacitance",
+            "inductor": "inductance",
+        }
 
         runs = []
         bandwidth_values = []
@@ -418,6 +443,7 @@ class NumericalSimulator:
     def _plot_dc_sweep(self, sweep, output, source_id, title, output_path):
         """Generate a DC sweep plot."""
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 

@@ -1,5 +1,5 @@
 """Ingest KiCad symbol library (.kicad_sym) files into the component database."""
-import re
+
 import json
 import uuid
 from pathlib import Path
@@ -20,20 +20,20 @@ def _tokenize(text: str) -> list[str]:
     i = 0
     while i < len(text):
         c = text[i]
-        if c in '(':
-            tokens.append('(')
+        if c in "(":
+            tokens.append("(")
             i += 1
-        elif c == ')':
-            tokens.append(')')
+        elif c == ")":
+            tokens.append(")")
             i += 1
         elif c == '"':
             # Quoted string
             j = i + 1
             while j < len(text) and text[j] != '"':
-                if text[j] == '\\':
+                if text[j] == "\\":
                     j += 1
                 j += 1
-            tokens.append(text[i+1:j])
+            tokens.append(text[i + 1 : j])
             i = j + 1
         elif c.isspace():
             i += 1
@@ -52,20 +52,20 @@ def _parse_tokens(tokens: list[str]) -> list:
     result = []
     i = 0
     while i < len(tokens):
-        if tokens[i] == '(':
+        if tokens[i] == "(":
             # Find matching close
             depth = 1
             j = i + 1
             while j < len(tokens) and depth > 0:
-                if tokens[j] == '(':
+                if tokens[j] == "(":
                     depth += 1
-                elif tokens[j] == ')':
+                elif tokens[j] == ")":
                     depth -= 1
                 j += 1
-            inner = _parse_tokens(tokens[i+1:j-1])
+            inner = _parse_tokens(tokens[i + 1 : j - 1])
             result.append(inner)
             i = j
-        elif tokens[i] == ')':
+        elif tokens[i] == ")":
             i += 1
         else:
             result.append(tokens[i])
@@ -166,10 +166,17 @@ def _extract_pin(node: list) -> dict | None:
 def _ref_to_type(ref: str) -> str:
     """Map KiCad reference designator to component type."""
     ref_map = {
-        "R": "resistor", "C": "capacitor", "L": "inductor",
-        "D": "diode", "Q": "bjt", "U": "ic",
-        "J": "connector", "K": "relay", "F": "fuse",
-        "LED": "led", "SW": "switch",
+        "R": "resistor",
+        "C": "capacitor",
+        "L": "inductor",
+        "D": "diode",
+        "Q": "bjt",
+        "U": "ic",
+        "J": "connector",
+        "K": "relay",
+        "F": "fuse",
+        "LED": "led",
+        "SW": "switch",
     }
     for prefix, ctype in ref_map.items():
         if ref.startswith(prefix):
@@ -200,8 +207,10 @@ def ingest_kicad_symbols(file_path: Path | str, db: Database) -> dict:
         params = {}
         if sym["pins"]:
             params["pin_count"] = len(sym["pins"])
-            params["pins"] = [{"name": p["name"], "number": p["number"],
-                               "type": p["type"]} for p in sym["pins"]]
+            params["pins"] = [
+                {"name": p["name"], "number": p["number"], "type": p["type"]}
+                for p in sym["pins"]
+            ]
 
         created = False
         with db.connect() as conn:
@@ -217,14 +226,24 @@ def ingest_kicad_symbols(file_path: Path | str, db: Database) -> dict:
                 "INSERT INTO component_models (id, type, part_number, description, "
                 "parameters, footprint, datasheet_url, source) "
                 "VALUES (?, ?, ?, ?, ?, ?, ?, 'kicad_import')",
-                (model_id, component_type, sym["name"], sym["description"],
-                 json.dumps(params), sym["footprint"], sym["datasheet"]),
+                (
+                    model_id,
+                    component_type,
+                    sym["name"],
+                    sym["description"],
+                    json.dumps(params),
+                    sym["footprint"],
+                    sym["datasheet"],
+                ),
             )
             created = True
 
         if created:
             record_provenance(
-                db, "component_models", model_id, "kicad_import",
+                db,
+                "component_models",
+                model_id,
+                "kicad_import",
                 source_url="https://gitlab.com/kicad/libraries/kicad-symbols",
                 licence="CC-BY-SA-4.0",
                 original_path=str(file_path),

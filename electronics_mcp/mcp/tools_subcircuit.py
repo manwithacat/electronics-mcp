@@ -1,4 +1,5 @@
 """MCP tools for subcircuit library management."""
+
 import json
 import uuid
 from electronics_mcp.mcp.server import mcp, get_db
@@ -27,15 +28,21 @@ def list_subcircuits(category: str | None = None) -> str:
             ).fetchall()
 
     if not rows:
-        return "No subcircuits found." + (f" (category: {category})" if category else "")
+        return "No subcircuits found." + (
+            f" (category: {category})" if category else ""
+        )
 
-    lines = ["| Name | Category | Description | Ports |",
-             "|------|----------|-------------|-------|"]
+    lines = [
+        "| Name | Category | Description | Ports |",
+        "|------|----------|-------------|-------|",
+    ]
     for r in rows:
         ports = json.loads(r["ports"]) if r["ports"] else []
         port_str = ", ".join(ports) if isinstance(ports, list) else str(ports)
-        lines.append(f"| {r['name']} | {r['category'] or '?'} | "
-                     f"{(r['description'] or '')[:50]} | {port_str} |")
+        lines.append(
+            f"| {r['name']} | {r['category'] or '?'} | "
+            f"{(r['description'] or '')[:50]} | {port_str} |"
+        )
     return "\n".join(lines)
 
 
@@ -100,8 +107,16 @@ def create_subcircuit(
             "INSERT INTO subcircuits (id, name, category, description, "
             "schema_json, ports, parameters, design_notes, source) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'user')",
-            (sc_id, name, category, description, schema_json,
-             ports_json, parameters_json or "{}", design_notes),
+            (
+                sc_id,
+                name,
+                category,
+                description,
+                schema_json,
+                ports_json,
+                parameters_json or "{}",
+                design_notes,
+            ),
         )
     return f"Subcircuit '{name}' created with ID: {sc_id}"
 
@@ -119,13 +134,23 @@ def import_subcircuit(name: str, spice_subckt: str, ports_json: str) -> str:
     db = get_db()
 
     # Store the raw SPICE as the schema (simplified import)
-    schema = {"name": name, "components": [], "description": f"Imported from SPICE: {name}"}
+    schema = {
+        "name": name,
+        "components": [],
+        "description": f"Imported from SPICE: {name}",
+    }
 
     with db.connect() as conn:
         conn.execute(
             "INSERT INTO subcircuits (id, name, description, schema_json, ports, "
             "design_notes, source) VALUES (?, ?, ?, ?, ?, ?, 'imported')",
-            (sc_id, name, f"Imported SPICE subcircuit",
-             json.dumps(schema), ports_json, spice_subckt),
+            (
+                sc_id,
+                name,
+                "Imported SPICE subcircuit",
+                json.dumps(schema),
+                ports_json,
+                spice_subckt,
+            ),
         )
     return f"Subcircuit '{name}' imported with ID: {sc_id}"

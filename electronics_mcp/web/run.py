@@ -1,4 +1,5 @@
 """Web UI entry point for ElectronicsMCP."""
+
 import uvicorn
 
 from electronics_mcp.web.app import app  # noqa: F401

@@ -1,4 +1,5 @@
 """CLI wrapper: ingest KiCad symbol library files."""
+
 import argparse
 import sys
 from pathlib import Path
@@ -12,15 +13,22 @@ def main():
         description="Ingest KiCad .kicad_sym symbol library files.",
     )
     parser.add_argument(
-        "--file", type=Path, action="append", dest="files",
+        "--file",
+        type=Path,
+        action="append",
+        dest="files",
         help="KiCad symbol library file(s) to ingest (can be repeated)",
     )
     parser.add_argument(
-        "--dir", type=Path, default=None,
+        "--dir",
+        type=Path,
+        default=None,
         help="Directory to scan for .kicad_sym files",
     )
     parser.add_argument(
-        "--db", type=Path, default=Path("electronics.db"),
+        "--db",
+        type=Path,
+        default=Path("electronics.db"),
         help="Database file path (default: electronics.db)",
     )
     args = parser.parse_args()

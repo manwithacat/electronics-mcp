@@ -1,4 +1,5 @@
 """Report generation (Markdown + PDF)."""
+
 from pathlib import Path
 from datetime import datetime
 
@@ -61,6 +62,7 @@ def generate_pdf(
     html = _markdown_to_html(content)
 
     from weasyprint import HTML
+
     HTML(string=html).write_pdf(str(output_path))
 
     return output_path
@@ -110,7 +112,9 @@ def _markdown_to_html(md: str) -> str:
         elif stripped.startswith("!["):
             match = re.match(r"!\[(.+?)\]\((.+?)\)", stripped)
             if match:
-                html_lines.append(f'<img src="{match.group(2)}" alt="{match.group(1)}">')
+                html_lines.append(
+                    f'<img src="{match.group(2)}" alt="{match.group(1)}">'
+                )
         # Empty line
         elif not stripped:
             if in_table:

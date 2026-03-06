@@ -1,10 +1,11 @@
-import pytest
 from electronics_mcp.core.database import Database
 from electronics_mcp.ingestion.build_design_rules import (
-    build_design_rules, DESIGN_RULES,
+    build_design_rules,
+    DESIGN_RULES,
 )
 from electronics_mcp.ingestion.build_formulas import (
-    build_formulas, FORMULAS,
+    build_formulas,
+    FORMULAS,
 )
 
 
@@ -37,7 +38,7 @@ class TestBuildDesignRules:
             rows = conn.execute(
                 "SELECT k.topic FROM knowledge k "
                 "JOIN knowledge_fts fts ON k.rowid = fts.rowid "
-                'WHERE knowledge_fts MATCH \'"decoupling"\'',
+                "WHERE knowledge_fts MATCH '\"decoupling\"'",
             ).fetchall()
             assert len(rows) >= 1
 
@@ -67,6 +68,7 @@ class TestBuildFormulas:
             ).fetchone()
             assert row is not None
             import json
+
             formulas = json.loads(row["formulas"])
             assert len(formulas) == 3
             assert formulas[0]["name"] == "V"

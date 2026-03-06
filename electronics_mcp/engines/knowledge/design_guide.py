@@ -1,4 +1,5 @@
 """Design guide generator -- creates step-by-step design procedures."""
+
 from electronics_mcp.core.database import Database
 from electronics_mcp.engines.knowledge.manager import KnowledgeManager
 
@@ -61,7 +62,8 @@ class DesignGuide:
         for line in content.split("\n"):
             line = line.strip()
             if line and (
-                line[0].isdigit() and "." in line[:3]
+                line[0].isdigit()
+                and "." in line[:3]
                 or line.startswith("- ")
                 or line.startswith("* ")
             ):

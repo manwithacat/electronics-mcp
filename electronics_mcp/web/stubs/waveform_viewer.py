@@ -1,4 +1,5 @@
 """Waveform viewer: interactive Plotly.js-based time/frequency plots."""
+
 import json
 from pathlib import Path
 
@@ -18,6 +19,7 @@ def _get_db(request: Request) -> Database:
     if hasattr(request.app.state, "db"):
         return request.app.state.db
     from electronics_mcp.config import ProjectConfig
+
     return Database(ProjectConfig().db_path)
 
 
@@ -45,18 +47,19 @@ async def waveform_view(request: Request, circuit_id: str):
             results = json.loads(sim["results_json"])
         except (json.JSONDecodeError, TypeError):
             results = {}
-        sim_data.append({
-            "id": sim["id"],
-            "analysis_type": sim["analysis_type"],
-            "results": results,
-            "parameters": sim["parameters"],
-            "created_at": sim["created_at"],
-        })
+        sim_data.append(
+            {
+                "id": sim["id"],
+                "analysis_type": sim["analysis_type"],
+                "results": results,
+                "parameters": sim["parameters"],
+                "created_at": sim["created_at"],
+            }
+        )
 
     return templates.TemplateResponse(
         "waveform_viewer.html",
-        {"request": request, "circuit": dict(circuit),
-         "simulations": sim_data},
+        {"request": request, "circuit": dict(circuit), "simulations": sim_data},
     )
 
 

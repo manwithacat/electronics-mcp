@@ -19,7 +19,13 @@ class ProjectConfig:
 
     def ensure_dirs(self):
         """Create all project directories."""
-        for d in [self.data_dir, self.schematics_dir, self.plots_dir,
-                  self.reports_dir, self.netlists_dir, self.bom_dir,
-                  self.models_dir]:
+        for d in [
+            self.data_dir,
+            self.schematics_dir,
+            self.plots_dir,
+            self.reports_dir,
+            self.netlists_dir,
+            self.bom_dir,
+            self.models_dir,
+        ]:
             d.mkdir(parents=True, exist_ok=True)

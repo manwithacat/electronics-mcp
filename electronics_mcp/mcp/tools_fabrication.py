@@ -1,4 +1,5 @@
 """MCP tools for fabrication output (netlists, BOM, components)."""
+
 from electronics_mcp.mcp.server import mcp, get_db, get_config
 from electronics_mcp.core.circuit_manager import CircuitManager
 from electronics_mcp.engines.fabrication.spice_netlist import generate_spice_netlist
@@ -79,10 +80,16 @@ def suggest_components(
     if not results:
         return f"No {component_type} components found in database."
 
-    lines = [f"Component suggestions for {component_type}" +
-             (f" ({target_value})" if target_value else "") + ":", ""]
+    lines = [
+        f"Component suggestions for {component_type}"
+        + (f" ({target_value})" if target_value else "")
+        + ":",
+        "",
+    ]
     for i, comp in enumerate(results, 1):
-        lines.append(f"  {i}. {comp.get('manufacturer', '?')} {comp.get('part_number', '?')}")
+        lines.append(
+            f"  {i}. {comp.get('manufacturer', '?')} {comp.get('part_number', '?')}"
+        )
         if comp.get("description"):
             lines.append(f"     {comp['description']}")
         if comp.get("footprint"):
@@ -111,6 +118,8 @@ def component_selection_guide(component_type: str) -> str:
         if g.get("selection_guide"):
             lines.append(f"  Guide: {g['selection_guide']}")
         if g.get("typical_values"):
-            lines.append(f"  Typical values: {', '.join(str(v) for v in g['typical_values'])}")
+            lines.append(
+                f"  Typical values: {', '.join(str(v) for v in g['typical_values'])}"
+            )
         lines.append("")
     return "\n".join(lines)

@@ -1,4 +1,5 @@
 """Knowledge base manager with FTS5 search."""
+
 import json
 import uuid
 from electronics_mcp.core.database import Database
@@ -10,7 +11,9 @@ class KnowledgeManager:
     def __init__(self, db: Database):
         self.db = db
 
-    def search(self, query: str, category: str | None = None, limit: int = 10) -> list[dict]:
+    def search(
+        self, query: str, category: str | None = None, limit: int = 10
+    ) -> list[dict]:
         """Full-text search across the knowledge base.
 
         Uses SQLite FTS5 for ranked search results.
@@ -45,7 +48,9 @@ class KnowledgeManager:
             for row in rows:
                 d = dict(row)
                 d["formulas"] = json.loads(d["formulas"]) if d["formulas"] else []
-                d["related_topics"] = json.loads(d["related_topics"]) if d["related_topics"] else []
+                d["related_topics"] = (
+                    json.loads(d["related_topics"]) if d["related_topics"] else []
+                )
                 results.append(d)
             return results
 
@@ -62,7 +67,9 @@ class KnowledgeManager:
                 return None
             d = dict(row)
             d["formulas"] = json.loads(d["formulas"]) if d["formulas"] else []
-            d["related_topics"] = json.loads(d["related_topics"]) if d["related_topics"] else []
+            d["related_topics"] = (
+                json.loads(d["related_topics"]) if d["related_topics"] else []
+            )
             return d
 
     def get_formulas(self, topic: str) -> list[dict]:
@@ -121,7 +128,9 @@ class KnowledgeManager:
             ).fetchall()
             for row in cat_rows:
                 d = dict(row)
-                d["typical_values"] = json.loads(d["typical_values"]) if d["typical_values"] else []
+                d["typical_values"] = (
+                    json.loads(d["typical_values"]) if d["typical_values"] else []
+                )
                 result["categories"].append(d)
 
             # Get models

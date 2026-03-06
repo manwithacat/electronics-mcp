@@ -1,9 +1,10 @@
 """E2E test fixtures: in-process uvicorn server sharing a Database with test code."""
+
 import socket
 import threading
+import time
 
 import pytest
-import uvicorn
 
 from electronics_mcp.core.circuit_manager import CircuitManager
 from electronics_mcp.core.database import Database
@@ -29,6 +30,8 @@ def e2e_db(tmp_path_factory):
 @pytest.fixture(scope="session")
 def e2e_server(e2e_db):
     """Start uvicorn in a background thread, sharing e2e_db with the app."""
+    import uvicorn
+
     app.state.db = e2e_db
     port = _free_port()
     config = uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning")
@@ -37,8 +40,6 @@ def e2e_server(e2e_db):
     thread = threading.Thread(target=server.run, daemon=True)
     thread.start()
 
-    # Wait for server to be ready
-    import time
     for _ in range(50):
         try:
             with socket.create_connection(("127.0.0.1", port), timeout=0.2):
@@ -65,9 +66,24 @@ def rc_circuit_id(circuit_manager) -> str:
         name="RC Low-Pass",
         description="Simple RC low-pass filter",
         components=[
-            {"id": "V1", "type": "voltage_source", "parameters": {"voltage": "5V"}, "nodes": ["in", "gnd"]},
-            {"id": "R1", "type": "resistor", "parameters": {"resistance": "10k"}, "nodes": ["in", "out"]},
-            {"id": "C1", "type": "capacitor", "parameters": {"capacitance": "100n"}, "nodes": ["out", "gnd"]},
+            {
+                "id": "V1",
+                "type": "voltage_source",
+                "parameters": {"voltage": "5V"},
+                "nodes": ["in", "gnd"],
+            },
+            {
+                "id": "R1",
+                "type": "resistor",
+                "parameters": {"resistance": "10k"},
+                "nodes": ["in", "out"],
+            },
+            {
+                "id": "C1",
+                "type": "capacitor",
+                "parameters": {"capacitance": "100n"},
+                "nodes": ["out", "gnd"],
+            },
         ],
     )
     return circuit_manager.create(schema)

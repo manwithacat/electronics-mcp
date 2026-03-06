@@ -2,6 +2,7 @@
 
 Handles SI prefix shorthand (10k, 47u, 100n) and explicit units (10kohm, 100nF).
 """
+
 import re
 
 SI_PREFIXES = {
@@ -18,9 +19,19 @@ SI_PREFIXES = {
 
 # Units to strip before prefix parsing
 UNIT_SUFFIXES = [
-    "ohm", "ohms", "Ohm", "Ohms",
-    "F", "H", "V", "A", "W",
-    "Hz", "hz", "s", "S",
+    "ohm",
+    "ohms",
+    "Ohm",
+    "Ohms",
+    "F",
+    "H",
+    "V",
+    "A",
+    "W",
+    "Hz",
+    "hz",
+    "s",
+    "S",
 ]
 
 # For formatting: ordered by magnitude

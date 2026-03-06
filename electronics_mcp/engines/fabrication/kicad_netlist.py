@@ -1,4 +1,5 @@
 """KiCad netlist generation from CircuitSchema."""
+
 from pathlib import Path
 from xml.etree.ElementTree import Element, SubElement, ElementTree, indent
 
@@ -46,8 +47,7 @@ def generate_kicad_netlist(schema: CircuitSchema, output_path: Path | str) -> Pa
 
         lib_info = KICAD_LIB_MAP.get(comp.type)
         if lib_info:
-            libsource = SubElement(comp_el, "libsource",
-                                   lib=lib_info[0], part=lib_info[1])
+            SubElement(comp_el, "libsource", lib=lib_info[0], part=lib_info[1])
 
         footprint_el = SubElement(comp_el, "footprint")
         footprint_el.text = _suggest_footprint(comp)

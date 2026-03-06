@@ -1,11 +1,11 @@
 """Integration test: verify MCP server has all tools and resources registered."""
-import pytest
 
 
 class TestMCPServerSetup:
     def test_server_imports_cleanly(self):
         """Verify the MCP server module imports without errors."""
         from electronics_mcp.mcp.server import mcp
+
         assert mcp is not None
         assert mcp.name == "ElectronicsMCP"
 
@@ -20,6 +20,7 @@ class TestMCPServerSetup:
         from electronics_mcp.mcp import tools_db
         from electronics_mcp.mcp import resources
         from electronics_mcp.mcp import tools_subcircuit
+
         # All imports succeeded
         assert tools_circuit is not None
         assert tools_simulation is not None
@@ -34,6 +35,7 @@ class TestMCPServerSetup:
     def test_server_has_tools(self):
         """Verify MCP server has registered tools."""
         from electronics_mcp.mcp.server import mcp
+
         # FastMCP object exists and is configured
         assert mcp.name == "ElectronicsMCP"
 
@@ -41,6 +43,7 @@ class TestMCPServerSetup:
         """Verify lazy initialization works."""
         import electronics_mcp.mcp.server as srv
         from electronics_mcp.config import ProjectConfig
+
         # Reset singletons and inject test config
         srv._config = ProjectConfig(project_dir=tmp_path)
         srv._db = None
@@ -56,13 +59,15 @@ class TestWebAppSetup:
     def test_web_app_imports(self):
         """Verify web app module imports without errors."""
         from electronics_mcp.web.app import app
+
         assert app is not None
         assert app.title == "ElectronicsMCP"
 
     def test_web_routes_registered(self):
         """Verify key routes exist."""
         from electronics_mcp.web.app import app
-        routes = [r.path for r in app.routes if hasattr(r, 'path')]
+
+        routes = [r.path for r in app.routes if hasattr(r, "path")]
         assert "/" in routes
         assert "/circuits" in routes
         assert "/knowledge" in routes

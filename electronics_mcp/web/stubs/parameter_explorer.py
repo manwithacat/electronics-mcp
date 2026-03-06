@@ -1,4 +1,5 @@
 """Parameter explorer: interactive circuit parameter adjustment with live simulation."""
+
 import json
 import uuid
 from pathlib import Path
@@ -9,7 +10,11 @@ from fastapi.templating import Jinja2Templates
 
 from electronics_mcp.core.circuit_manager import CircuitManager
 from electronics_mcp.core.database import Database
-from electronics_mcp.core.schema import CircuitModification, CircuitSchema, ComponentUpdate
+from electronics_mcp.core.schema import (
+    CircuitModification,
+    CircuitSchema,
+    ComponentUpdate,
+)
 from electronics_mcp.engines.simulation.numerical import NumericalSimulator
 
 TEMPLATES_DIR = Path(__file__).parent.parent / "templates"
@@ -22,6 +27,7 @@ def _get_db(request: Request) -> Database:
     if hasattr(request.app.state, "db"):
         return request.app.state.db
     from electronics_mcp.config import ProjectConfig
+
     config = ProjectConfig()
     return Database(config.db_path)
 
@@ -47,12 +53,14 @@ async def explorer_view(request: Request, circuit_id: str):
     for comp in components:
         comp_params = comp.get("parameters", {})
         for pname, pvalue in comp_params.items():
-            params.append({
-                "component_id": comp.get("id", ""),
-                "component_type": comp.get("type", ""),
-                "param_name": pname,
-                "current_value": str(pvalue),
-            })
+            params.append(
+                {
+                    "component_id": comp.get("id", ""),
+                    "component_type": comp.get("type", ""),
+                    "param_name": pname,
+                    "current_value": str(pvalue),
+                }
+            )
 
     return templates.TemplateResponse(
         "parameter_explorer.html",
@@ -105,50 +113,62 @@ async def simulate_with_params(request: Request, circuit_id: str):
             conn.execute(
                 "INSERT INTO simulation_results (id, circuit_id, analysis_type, parameters, results_json) "
                 "VALUES (?, ?, ?, ?, ?)",
-                (str(uuid.uuid4()), circuit_id, analysis_type,
-                 json.dumps({"source": "parameter_explorer"}),
-                 json.dumps(result)),
+                (
+                    str(uuid.uuid4()),
+                    circuit_id,
+                    analysis_type,
+                    json.dumps({"source": "parameter_explorer"}),
+                    json.dumps(result),
+                ),
             )
 
         # Build HTML response with real results
         lines = ['<div class="card"><h3>Simulation Results</h3>']
-        lines.append(f'<p><strong>Analysis:</strong> {analysis_type}</p>')
+        lines.append(f"<p><strong>Analysis:</strong> {analysis_type}</p>")
 
         if analysis_type == "dc_op" and "node_voltages" in result:
-            lines.append('<h4>Node Voltages</h4><ul>')
+            lines.append("<h4>Node Voltages</h4><ul>")
             for node, voltage in result["node_voltages"].items():
-                lines.append(f'<li><strong>{node}</strong>: {voltage:.4g} V</li>')
-            lines.append('</ul>')
+                lines.append(f"<li><strong>{node}</strong>: {voltage:.4g} V</li>")
+            lines.append("</ul>")
             if "branch_currents" in result:
-                lines.append('<h4>Branch Currents</h4><ul>')
+                lines.append("<h4>Branch Currents</h4><ul>")
                 for branch, current in result["branch_currents"].items():
-                    lines.append(f'<li><strong>{branch}</strong>: {current:.4g} A</li>')
-                lines.append('</ul>')
+                    lines.append(f"<li><strong>{branch}</strong>: {current:.4g} A</li>")
+                lines.append("</ul>")
         elif analysis_type == "ac":
             if "bandwidth_hz" in result:
-                lines.append(f'<p><strong>Bandwidth:</strong> {result["bandwidth_hz"]:.2f} Hz</p>')
+                lines.append(
+                    f"<p><strong>Bandwidth:</strong> {result['bandwidth_hz']:.2f} Hz</p>"
+                )
             if "dc_gain_db" in result:
-                lines.append(f'<p><strong>DC Gain:</strong> {result["dc_gain_db"]:.2f} dB</p>')
+                lines.append(
+                    f"<p><strong>DC Gain:</strong> {result['dc_gain_db']:.2f} dB</p>"
+                )
         elif analysis_type == "transient":
             if "rise_time" in result:
-                lines.append(f'<p><strong>Rise Time:</strong> {result["rise_time"]:.4g} s</p>')
+                lines.append(
+                    f"<p><strong>Rise Time:</strong> {result['rise_time']:.4g} s</p>"
+                )
             if "overshoot_pct" in result:
-                lines.append(f'<p><strong>Overshoot:</strong> {result["overshoot_pct"]:.1f}%</p>')
+                lines.append(
+                    f"<p><strong>Overshoot:</strong> {result['overshoot_pct']:.1f}%</p>"
+                )
 
         # Show updated parameters
-        lines.append('<h4>Parameters Used</h4><ul>')
+        lines.append("<h4>Parameters Used</h4><ul>")
         for comp in components:
             comp_id = comp.get("id", "")
             for pname, pval in comp.get("parameters", {}).items():
-                lines.append(f'<li><strong>{comp_id}.{pname}</strong>: {pval}</li>')
-        lines.append('</ul></div>')
+                lines.append(f"<li><strong>{comp_id}.{pname}</strong>: {pval}</li>")
+        lines.append("</ul></div>")
         return HTMLResponse("".join(lines))
 
     except Exception as e:
         return HTMLResponse(
             f'<div class="card"><h3>Simulation Error</h3>'
             f'<p style="color:red;">{type(e).__name__}: {e}</p>'
-            f'</div>'
+            f"</div>"
         )
 
 

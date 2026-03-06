@@ -12,25 +12,50 @@ def simulator():
 VOLTAGE_DIVIDER = CircuitSchema(
     name="Voltage Divider",
     components=[
-        ComponentBase(id="V1", type="voltage_source", subtype="dc",
-                      parameters={"voltage": "10V"}, nodes=["input", "gnd"]),
-        ComponentBase(id="R1", type="resistor",
-                      parameters={"resistance": "10k"}, nodes=["input", "output"]),
-        ComponentBase(id="R2", type="resistor",
-                      parameters={"resistance": "10k"}, nodes=["output", "gnd"]),
+        ComponentBase(
+            id="V1",
+            type="voltage_source",
+            subtype="dc",
+            parameters={"voltage": "10V"},
+            nodes=["input", "gnd"],
+        ),
+        ComponentBase(
+            id="R1",
+            type="resistor",
+            parameters={"resistance": "10k"},
+            nodes=["input", "output"],
+        ),
+        ComponentBase(
+            id="R2",
+            type="resistor",
+            parameters={"resistance": "10k"},
+            nodes=["output", "gnd"],
+        ),
     ],
 )
 
 RC_FILTER = CircuitSchema(
     name="RC Low-Pass",
     components=[
-        ComponentBase(id="V1", type="voltage_source", subtype="ac",
-                      parameters={"amplitude": "1V", "offset": "0V"},
-                      nodes=["input", "gnd"]),
-        ComponentBase(id="R1", type="resistor",
-                      parameters={"resistance": "10k"}, nodes=["input", "output"]),
-        ComponentBase(id="C1", type="capacitor",
-                      parameters={"capacitance": "10n"}, nodes=["output", "gnd"]),
+        ComponentBase(
+            id="V1",
+            type="voltage_source",
+            subtype="ac",
+            parameters={"amplitude": "1V", "offset": "0V"},
+            nodes=["input", "gnd"],
+        ),
+        ComponentBase(
+            id="R1",
+            type="resistor",
+            parameters={"resistance": "10k"},
+            nodes=["input", "output"],
+        ),
+        ComponentBase(
+            id="C1",
+            type="capacitor",
+            parameters={"capacitance": "10n"},
+            nodes=["output", "gnd"],
+        ),
     ],
 )
 

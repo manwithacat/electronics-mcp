@@ -1,4 +1,5 @@
 """MCP tools for circuit comparison and ranking."""
+
 import json
 import uuid
 from electronics_mcp.mcp.server import mcp, get_db
@@ -7,7 +8,9 @@ from electronics_mcp.engines.fabrication.bom import generate_bom_summary
 
 
 @mcp.tool()
-def create_comparison(name: str, circuit_ids_json: str, criteria_json: str | None = None) -> str:
+def create_comparison(
+    name: str, circuit_ids_json: str, criteria_json: str | None = None
+) -> str:
     """Create a named comparison between multiple circuits.
 
     Args:
@@ -26,7 +29,9 @@ def create_comparison(name: str, circuit_ids_json: str, criteria_json: str | Non
             "VALUES (?, ?, ?, ?, ?)",
             (comp_id, name, json.dumps(circuit_ids), json.dumps(criteria), "{}"),
         )
-    return f"Comparison '{name}' created with ID: {comp_id}\nCircuits: {len(circuit_ids)}"
+    return (
+        f"Comparison '{name}' created with ID: {comp_id}\nCircuits: {len(circuit_ids)}"
+    )
 
 
 @mcp.tool()

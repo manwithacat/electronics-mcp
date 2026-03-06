@@ -4,9 +4,15 @@ import warnings
 from electronics_mcp.core.database import Database
 from electronics_mcp.mcp.tools_circuit import define_circuit
 from electronics_mcp.mcp.tools_simulation import (
-    dc_operating_point, ac_analysis, transient_analysis,
-    transfer_function, impedance, poles_and_zeros,
-    node_voltage_expression, simplify_network, step_response,
+    dc_operating_point,
+    ac_analysis,
+    transient_analysis,
+    transfer_function,
+    impedance,
+    poles_and_zeros,
+    node_voltage_expression,
+    simplify_network,
+    step_response,
 )
 import electronics_mcp.mcp.server as srv
 
@@ -21,17 +27,32 @@ def reset_server_state(tmp_project):
     srv._db = None
 
 
-RC_FILTER_JSON = json.dumps({
-    "name": "RC Low-Pass",
-    "components": [
-        {"id": "V1", "type": "voltage_source", "subtype": "ac",
-         "parameters": {"amplitude": "1V"}, "nodes": ["input", "gnd"]},
-        {"id": "R1", "type": "resistor",
-         "parameters": {"resistance": "10k"}, "nodes": ["input", "output"]},
-        {"id": "C1", "type": "capacitor",
-         "parameters": {"capacitance": "10n"}, "nodes": ["output", "gnd"]},
-    ]
-})
+RC_FILTER_JSON = json.dumps(
+    {
+        "name": "RC Low-Pass",
+        "components": [
+            {
+                "id": "V1",
+                "type": "voltage_source",
+                "subtype": "ac",
+                "parameters": {"amplitude": "1V"},
+                "nodes": ["input", "gnd"],
+            },
+            {
+                "id": "R1",
+                "type": "resistor",
+                "parameters": {"resistance": "10k"},
+                "nodes": ["input", "output"],
+            },
+            {
+                "id": "C1",
+                "type": "capacitor",
+                "parameters": {"capacitance": "10n"},
+                "nodes": ["output", "gnd"],
+            },
+        ],
+    }
+)
 
 
 def _create_circuit():

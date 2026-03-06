@@ -1,18 +1,19 @@
-import pytest
 from electronics_mcp.core.database import Database
 from electronics_mcp.ingestion.ingest_kicad_symbols import (
-    parse_sexpr, extract_symbols, ingest_kicad_symbols,
+    parse_sexpr,
+    extract_symbols,
+    ingest_kicad_symbols,
 )
 
 
 class TestSexprParser:
     def test_parse_simple(self):
-        result = parse_sexpr('(kicad_symbol_lib (version 20220914))')
+        result = parse_sexpr("(kicad_symbol_lib (version 20220914))")
         assert len(result) == 1
         assert result[0][0] == "kicad_symbol_lib"
 
     def test_parse_nested(self):
-        result = parse_sexpr('(a (b c) (d (e f)))')
+        result = parse_sexpr("(a (b c) (d (e f)))")
         assert result[0][0] == "a"
         assert result[0][1] == ["b", "c"]
 
@@ -24,7 +25,7 @@ class TestSexprParser:
 
 class TestSymbolExtraction:
     def test_extract_symbol(self):
-        parsed = parse_sexpr('''
+        parsed = parse_sexpr("""
         (kicad_symbol_lib
           (symbol "R_Small"
             (property "Reference" "R")
@@ -36,7 +37,7 @@ class TestSymbolExtraction:
             )
           )
         )
-        ''')
+        """)
         symbols = extract_symbols(parsed[0])
         assert len(symbols) == 1
         assert symbols[0]["name"] == "R_Small"
@@ -44,12 +45,12 @@ class TestSymbolExtraction:
         assert len(symbols[0]["pins"]) == 2
 
     def test_skip_power_symbols(self):
-        parsed = parse_sexpr('''
+        parsed = parse_sexpr("""
         (kicad_symbol_lib
           (symbol "power:GND" (property "Reference" "#PWR"))
           (symbol "R_10k" (property "Reference" "R"))
         )
-        ''')
+        """)
         symbols = extract_symbols(parsed[0])
         assert len(symbols) == 1
         assert symbols[0]["name"] == "R_10k"
@@ -57,7 +58,7 @@ class TestSymbolExtraction:
 
 class TestIngestion:
     def test_ingest_kicad_file(self, tmp_path):
-        kicad_content = '''(kicad_symbol_lib (version 20220914)
+        kicad_content = """(kicad_symbol_lib (version 20220914)
   (symbol "C_Small"
     (property "Reference" "C")
     (property "Description" "Capacitor, small symbol")
@@ -77,7 +78,7 @@ class TestIngestion:
       (pin passive line (name "K") (number "2"))
     )
   )
-)'''
+)"""
         sym_file = tmp_path / "test.kicad_sym"
         sym_file.write_text(kicad_content)
 

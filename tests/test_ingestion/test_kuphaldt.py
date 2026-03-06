@@ -1,9 +1,10 @@
-import pytest
-from pathlib import Path
 from electronics_mcp.core.database import Database
 from electronics_mcp.ingestion.ingest_kuphaldt import (
-    ingest_kuphaldt, _SectionExtractor, _extract_formulas,
-    _topic_slug, _difficulty_from_depth,
+    ingest_kuphaldt,
+    _SectionExtractor,
+    _extract_formulas,
+    _topic_slug,
+    _difficulty_from_depth,
 )
 
 

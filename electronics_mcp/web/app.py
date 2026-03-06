@@ -1,4 +1,5 @@
 """FastAPI web application for ElectronicsMCP browser UI."""
+
 import json
 from pathlib import Path
 
@@ -19,6 +20,7 @@ templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 from electronics_mcp.web.stubs.parameter_explorer import router as explorer_router  # noqa: E402
 from electronics_mcp.web.stubs.waveform_viewer import router as waveform_router  # noqa: E402
 from electronics_mcp.web.stubs.circuit_comparison import router as comparison_router  # noqa: E402
+
 app.include_router(explorer_router)
 app.include_router(waveform_router)
 app.include_router(comparison_router)
@@ -33,6 +35,7 @@ def _get_db(request: Request) -> Database:
 
 
 # --- Entity list views ---
+
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
@@ -50,9 +53,13 @@ async def list_circuits(request: Request):
     circuits = [dict(r) for r in rows]
     return templates.TemplateResponse(
         "entity_list.html",
-        {"request": request, "title": "Circuits", "items": circuits,
-         "columns": ["name", "status", "created_at"],
-         "detail_base": "/circuits"},
+        {
+            "request": request,
+            "title": "Circuits",
+            "items": circuits,
+            "columns": ["name", "status", "created_at"],
+            "detail_base": "/circuits",
+        },
     )
 
 
@@ -73,8 +80,12 @@ async def circuit_detail(request: Request, circuit_id: str):
             pass
     return templates.TemplateResponse(
         "entity_detail.html",
-        {"request": request, "title": item.get("name", "Circuit"),
-         "item": item, "entity_type": "circuit"},
+        {
+            "request": request,
+            "title": item.get("name", "Circuit"),
+            "item": item,
+            "entity_type": "circuit",
+        },
     )
 
 
@@ -89,9 +100,13 @@ async def list_components(request: Request):
     items = [dict(r) for r in rows]
     return templates.TemplateResponse(
         "entity_list.html",
-        {"request": request, "title": "Components", "items": items,
-         "columns": ["type", "part_number", "description"],
-         "detail_base": "/components"},
+        {
+            "request": request,
+            "title": "Components",
+            "items": items,
+            "columns": ["type", "part_number", "description"],
+            "detail_base": "/components",
+        },
     )
 
 
@@ -124,8 +139,13 @@ async def search_components(request: Request, type: str = "", q: str = ""):
     results = [dict(r) for r in rows]
     return templates.TemplateResponse(
         "component_search.html",
-        {"request": request, "results": results, "types": types,
-         "selected_type": type, "query": q},
+        {
+            "request": request,
+            "results": results,
+            "types": types,
+            "selected_type": type,
+            "query": q,
+        },
     )
 
 
@@ -140,8 +160,12 @@ async def component_detail(request: Request, component_id: str):
         return HTMLResponse("Not found", status_code=404)
     return templates.TemplateResponse(
         "entity_detail.html",
-        {"request": request, "title": dict(row).get("part_number", "Component"),
-         "item": dict(row), "entity_type": "component"},
+        {
+            "request": request,
+            "title": dict(row).get("part_number", "Component"),
+            "item": dict(row),
+            "entity_type": "component",
+        },
     )
 
 
@@ -156,9 +180,13 @@ async def list_knowledge(request: Request):
     items = [dict(r) for r in rows]
     return templates.TemplateResponse(
         "entity_list.html",
-        {"request": request, "title": "Knowledge Base", "items": items,
-         "columns": ["category", "topic", "title", "difficulty"],
-         "detail_base": "/knowledge"},
+        {
+            "request": request,
+            "title": "Knowledge Base",
+            "items": items,
+            "columns": ["category", "topic", "title", "difficulty"],
+            "detail_base": "/knowledge",
+        },
     )
 
 
@@ -173,8 +201,12 @@ async def knowledge_detail(request: Request, knowledge_id: str):
         return HTMLResponse("Not found", status_code=404)
     return templates.TemplateResponse(
         "entity_detail.html",
-        {"request": request, "title": dict(row).get("title", "Knowledge"),
-         "item": dict(row), "entity_type": "knowledge"},
+        {
+            "request": request,
+            "title": dict(row).get("title", "Knowledge"),
+            "item": dict(row),
+            "entity_type": "knowledge",
+        },
     )
 
 
@@ -189,9 +221,13 @@ async def list_subcircuits(request: Request):
     items = [dict(r) for r in rows]
     return templates.TemplateResponse(
         "entity_list.html",
-        {"request": request, "title": "Subcircuits", "items": items,
-         "columns": ["name", "category", "description"],
-         "detail_base": "/subcircuits"},
+        {
+            "request": request,
+            "title": "Subcircuits",
+            "items": items,
+            "columns": ["name", "category", "description"],
+            "detail_base": "/subcircuits",
+        },
     )
 
 
@@ -206,12 +242,17 @@ async def subcircuit_detail(request: Request, subcircuit_id: str):
         return HTMLResponse("Not found", status_code=404)
     return templates.TemplateResponse(
         "entity_detail.html",
-        {"request": request, "title": dict(row).get("name", "Subcircuit"),
-         "item": dict(row), "entity_type": "subcircuit"},
+        {
+            "request": request,
+            "title": dict(row).get("name", "Subcircuit"),
+            "item": dict(row),
+            "entity_type": "subcircuit",
+        },
     )
 
 
 # --- JSON API endpoints ---
+
 
 @app.get("/api/circuits")
 async def api_circuits(request: Request):

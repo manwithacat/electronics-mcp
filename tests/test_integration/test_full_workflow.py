@@ -3,9 +3,8 @@
 Defines a circuit -> stores in DB -> simulates -> renders schematic ->
 generates report -> exports netlist -> generates BOM.
 """
-import json
+
 import pytest
-from pathlib import Path
 
 from electronics_mcp.core.database import Database
 from electronics_mcp.core.schema import CircuitSchema
@@ -31,16 +30,26 @@ class TestFullDesignWorkflow:
         out = workspace["path"]
 
         # Step 1: Define circuit schema
-        schema = CircuitSchema.model_validate({
-            "name": "voltage_divider",
-            "description": "Simple resistive voltage divider",
-            "components": [
-                {"id": "R1", "type": "resistor",
-                 "parameters": {"resistance": "10k"}, "nodes": ["vin", "vout"]},
-                {"id": "R2", "type": "resistor",
-                 "parameters": {"resistance": "10k"}, "nodes": ["vout", "gnd"]},
-            ],
-        })
+        schema = CircuitSchema.model_validate(
+            {
+                "name": "voltage_divider",
+                "description": "Simple resistive voltage divider",
+                "components": [
+                    {
+                        "id": "R1",
+                        "type": "resistor",
+                        "parameters": {"resistance": "10k"},
+                        "nodes": ["vin", "vout"],
+                    },
+                    {
+                        "id": "R2",
+                        "type": "resistor",
+                        "parameters": {"resistance": "10k"},
+                        "nodes": ["vout", "gnd"],
+                    },
+                ],
+            }
+        )
         assert len(schema.components) == 2
 
         # Step 2: Store in database via CircuitManager
@@ -69,7 +78,8 @@ class TestFullDesignWorkflow:
 
         # Step 5: Generate report
         report_path = generate_markdown(
-            schema, out / "report.md",
+            schema,
+            out / "report.md",
             title="Voltage Divider Report",
             notes=["Equal resistors give Vout = Vin/2"],
         )
@@ -81,16 +91,26 @@ class TestFullDesignWorkflow:
         db = workspace["db"]
         out = workspace["path"]
 
-        schema = CircuitSchema.model_validate({
-            "name": "rc_lowpass",
-            "description": "First-order RC low-pass filter",
-            "components": [
-                {"id": "R1", "type": "resistor",
-                 "parameters": {"resistance": "1k"}, "nodes": ["in", "out"]},
-                {"id": "C1", "type": "capacitor",
-                 "parameters": {"capacitance": "100n"}, "nodes": ["out", "gnd"]},
-            ],
-        })
+        schema = CircuitSchema.model_validate(
+            {
+                "name": "rc_lowpass",
+                "description": "First-order RC low-pass filter",
+                "components": [
+                    {
+                        "id": "R1",
+                        "type": "resistor",
+                        "parameters": {"resistance": "1k"},
+                        "nodes": ["in", "out"],
+                    },
+                    {
+                        "id": "C1",
+                        "type": "capacitor",
+                        "parameters": {"capacitance": "100n"},
+                        "nodes": ["out", "gnd"],
+                    },
+                ],
+            }
+        )
 
         mgr = CircuitManager(db)
         circuit_id = mgr.create(schema)

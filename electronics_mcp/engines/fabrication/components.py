@@ -1,4 +1,5 @@
 """Component suggestion engine -- finds real parts matching ideal values."""
+
 from electronics_mcp.core.database import Database
 from electronics_mcp.core.units import parse_value
 import json
@@ -38,7 +39,9 @@ class ComponentSuggester:
                 results = []
                 for row in rows:
                     d = dict(row)
-                    d["parameters"] = json.loads(d["parameters"]) if d["parameters"] else {}
+                    d["parameters"] = (
+                        json.loads(d["parameters"]) if d["parameters"] else {}
+                    )
                     if target is not None:
                         d["match_score"] = self._score_match(d, target)
                     results.append(d)
@@ -55,7 +58,9 @@ class ComponentSuggester:
                 results = []
                 for row in rows:
                     d = dict(row)
-                    d["parameters"] = json.loads(d["parameters"]) if d["parameters"] else {}
+                    d["parameters"] = (
+                        json.loads(d["parameters"]) if d["parameters"] else {}
+                    )
                     results.append(d)
                 return results
 

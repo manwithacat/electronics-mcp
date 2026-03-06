@@ -1,4 +1,5 @@
 """MCP tools for knowledge base access and learning."""
+
 import json
 from electronics_mcp.mcp.server import mcp, get_db
 from electronics_mcp.core.circuit_manager import CircuitManager
@@ -132,12 +133,16 @@ def component_info(component_type: str, model: str | None = None) -> str:
     if info.get("categories"):
         lines.append("## Categories")
         for cat in info["categories"]:
-            lines.append(f"  - {cat.get('subtype', 'general')}: {cat.get('selection_guide', 'N/A')}")
+            lines.append(
+                f"  - {cat.get('subtype', 'general')}: {cat.get('selection_guide', 'N/A')}"
+            )
     if info.get("models"):
         lines.append("")
         lines.append("## Available Models")
         for m in info["models"]:
-            lines.append(f"  - {m.get('manufacturer', '?')} {m.get('part_number', '?')}")
+            lines.append(
+                f"  - {m.get('manufacturer', '?')} {m.get('part_number', '?')}"
+            )
             if m.get("description"):
                 lines.append(f"    {m['description']}")
     elif not info.get("categories"):
@@ -212,7 +217,9 @@ def what_if(circuit_id: str, change_description: str) -> str:
 
     lines = [f"What-If Analysis: {change_description}", ""]
     lines.append(f"Circuit: {schema.name}")
-    lines.append(f"Components: {', '.join(c.id + ' (' + c.type + ')' for c in schema.components)}")
+    lines.append(
+        f"Components: {', '.join(c.id + ' (' + c.type + ')' for c in schema.components)}"
+    )
     lines.append("")
 
     # Compose qualitative analysis
@@ -232,8 +239,12 @@ def what_if(circuit_id: str, change_description: str) -> str:
     lines.append("")
     lines.append("## Expected Effects")
     lines.append(f"  Change: {change_description}")
-    lines.append(f"  Affects circuit '{schema.name}' with {len(schema.components)} components.")
-    lines.append("  Use simulation tools (dc_operating_point, ac_analysis) to quantify the impact.")
+    lines.append(
+        f"  Affects circuit '{schema.name}' with {len(schema.components)} components."
+    )
+    lines.append(
+        "  Use simulation tools (dc_operating_point, ac_analysis) to quantify the impact."
+    )
 
     return "\n".join(lines)
 
@@ -296,20 +307,26 @@ def check_design(circuit_id: str) -> str:
         lines.append("")
         lines.append("## Pass/Fail Table")
         lines.append(f"  {'Spec':<25} {'Target':>12} {'Measured':>12} {'Status':>8}")
-        lines.append(f"  {'-'*25} {'-'*12} {'-'*12} {'-'*8}")
+        lines.append(f"  {'-' * 25} {'-' * 12} {'-' * 12} {'-' * 8}")
         for spec, target in targets.items():
             measured = all_results.get(spec)
             if measured is not None:
                 try:
-                    target_val = float(target) if isinstance(target, str) else float(target)
+                    target_val = (
+                        float(target) if isinstance(target, str) else float(target)
+                    )
                     # Pass if within 20% of target
-                    ratio = measured / target_val if target_val != 0 else float('inf')
+                    ratio = measured / target_val if target_val != 0 else float("inf")
                     status = "PASS" if 0.8 <= ratio <= 1.2 else "FAIL"
                 except (ValueError, TypeError):
                     status = "N/A"
-                lines.append(f"  {spec:<25} {str(target):>12} {measured:>12.4g} {status:>8}")
+                lines.append(
+                    f"  {spec:<25} {str(target):>12} {measured:>12.4g} {status:>8}"
+                )
             else:
-                lines.append(f"  {spec:<25} {str(target):>12} {'---':>12} {'MISSING':>8}")
+                lines.append(
+                    f"  {spec:<25} {str(target):>12} {'---':>12} {'MISSING':>8}"
+                )
     else:
         lines.append("")
         lines.append("No target specifications defined in design_intent.")
