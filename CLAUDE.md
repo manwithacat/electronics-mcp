@@ -35,3 +35,6 @@ pip install -e ".[dev,web]"
 - EE unit shorthand: 10k, 47u, 100n (use `core.units.parse_value`)
 - Circuit descriptions use the `CircuitSchema` Pydantic model
 - All file outputs go to `output/` subdirectories
+- Use `/bump` and `/ship` for versioning and releases
+
+**Version**: 0.2.0
