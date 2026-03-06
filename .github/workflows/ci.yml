@@ -40,7 +40,7 @@ jobs:
           cache-dependency-path: pyproject.toml
 
       - name: Install ngspice
-        run: sudo apt-get update && sudo apt-get install -y ngspice
+        run: sudo apt-get update && sudo apt-get install -y ngspice libngspice0-dev
 
       - name: Install dependencies
         run: pip install -e ".[dev,web]"
@@ -69,7 +69,7 @@ jobs:
           cache-dependency-path: pyproject.toml
 
       - name: Install ngspice
-        run: sudo apt-get update && sudo apt-get install -y ngspice
+        run: sudo apt-get update && sudo apt-get install -y ngspice libngspice0-dev
 
       - name: Install dependencies
         run: pip install -e ".[dev,web,e2e]"
