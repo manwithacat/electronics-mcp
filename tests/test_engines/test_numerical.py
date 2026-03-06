@@ -1,7 +1,10 @@
 import pytest
 import warnings
+from tests.markers import requires_ngspice
 from electronics_mcp.core.schema import CircuitSchema, ComponentBase
 from electronics_mcp.engines.simulation.numerical import NumericalSimulator
+
+pytestmark = requires_ngspice
 
 
 @pytest.fixture

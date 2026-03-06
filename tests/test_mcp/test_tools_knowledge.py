@@ -1,6 +1,7 @@
 import pytest
 import json
 import warnings
+from tests.markers import requires_ngspice
 from electronics_mcp.core.database import Database
 from electronics_mcp.mcp.tools_circuit import define_circuit
 from electronics_mcp.mcp.tools_simulation import dc_operating_point
@@ -150,6 +151,7 @@ class TestCheckDesign:
         result = check_design(cid)
         assert "No simulation results" in result
 
+    @requires_ngspice
     def test_check_design_with_results(self):
         cid = _create_circuit()
         with warnings.catch_warnings():

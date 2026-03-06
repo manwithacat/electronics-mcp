@@ -1,6 +1,7 @@
 import pytest
 import json
 import warnings
+from tests.markers import requires_ngspice
 from electronics_mcp.core.database import Database
 from electronics_mcp.mcp.tools_circuit import define_circuit
 from electronics_mcp.mcp.tools_simulation import (
@@ -60,6 +61,7 @@ def _create_circuit():
     return result.split("ID: ")[1].split("\n")[0].strip()
 
 
+@requires_ngspice
 class TestNumericalTools:
     def test_dc_operating_point(self):
         cid = _create_circuit()
