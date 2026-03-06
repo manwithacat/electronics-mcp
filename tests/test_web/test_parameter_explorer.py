@@ -5,25 +5,33 @@ from electronics_mcp.core.database import Database
 from electronics_mcp.web.app import app
 
 
+RC_SCHEMA = {
+    "name": "rc_filter",
+    "components": [
+        {"id": "R1", "type": "resistor",
+         "parameters": {"resistance": "1k"}, "nodes": ["in", "out"]},
+        {"id": "C1", "type": "capacitor",
+         "parameters": {"capacitance": "100n"}, "nodes": ["out", "gnd"]},
+    ],
+}
+
+
 @pytest.fixture
 def client(tmp_path):
     db = Database(tmp_path / "test.db")
     db.initialize()
     app.state.db = db
-    schema = {
-        "name": "rc_filter",
-        "components": [
-            {"id": "R1", "type": "resistor",
-             "parameters": {"resistance": "1k"}, "nodes": ["in", "out"]},
-            {"id": "C1", "type": "capacitor",
-             "parameters": {"capacitance": "100n"}, "nodes": ["out", "gnd"]},
-        ],
-    }
+    schema_json = json.dumps(RC_SCHEMA)
     with db.connect() as conn:
         conn.execute(
             "INSERT INTO circuits (id, name, description, schema_json) "
             "VALUES (?, ?, ?, ?)",
-            ("rc1", "RC Filter", "Test filter", json.dumps(schema)),
+            ("rc1", "RC Filter", "Test filter", schema_json),
+        )
+        conn.execute(
+            "INSERT INTO circuit_versions (id, circuit_id, version, schema_json) "
+            "VALUES (?, ?, 1, ?)",
+            ("v1", "rc1", schema_json),
         )
     return TestClient(app)
 
@@ -62,3 +70,41 @@ class TestParameterExplorer:
         resp = client.get("/explorer/rc1")
         assert "resistor" in resp.text
         assert "capacitor" in resp.text
+
+    def test_save_persists_changes(self, client):
+        resp = client.post(
+            "/explorer/rc1/save",
+            data={"R1__resistance": "22k", "C1__capacitance": "100n"},
+        )
+        assert resp.status_code == 200
+        assert "version 2" in resp.text.lower() or "Version: 2" in resp.text
+
+        # Verify DB was updated
+        db = app.state.db
+        with db.connect() as conn:
+            row = conn.execute(
+                "SELECT schema_json FROM circuits WHERE id = 'rc1'"
+            ).fetchone()
+            schema = json.loads(row["schema_json"])
+            r1 = next(c for c in schema["components"] if c["id"] == "R1")
+            assert r1["parameters"]["resistance"] == "22k"
+
+            versions = conn.execute(
+                "SELECT version FROM circuit_versions WHERE circuit_id = 'rc1' ORDER BY version"
+            ).fetchall()
+            assert len(versions) == 2
+
+    def test_save_no_changes(self, client):
+        resp = client.post(
+            "/explorer/rc1/save",
+            data={"R1__resistance": "1k", "C1__capacitance": "100n"},
+        )
+        assert resp.status_code == 200
+        assert "no parameter changes" in resp.text.lower()
+
+    def test_save_not_found(self, client):
+        resp = client.post(
+            "/explorer/nonexistent/save",
+            data={"R1__resistance": "22k"},
+        )
+        assert resp.status_code == 404

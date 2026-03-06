@@ -7,8 +7,9 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
+from electronics_mcp.core.circuit_manager import CircuitManager
 from electronics_mcp.core.database import Database
-from electronics_mcp.core.schema import CircuitSchema
+from electronics_mcp.core.schema import CircuitModification, CircuitSchema, ComponentUpdate
 from electronics_mcp.engines.simulation.numerical import NumericalSimulator
 
 TEMPLATES_DIR = Path(__file__).parent.parent / "templates"
@@ -149,3 +150,51 @@ async def simulate_with_params(request: Request, circuit_id: str):
             f'<p style="color:red;">{type(e).__name__}: {e}</p>'
             f'</div>'
         )
+
+
+@router.post("/{circuit_id}/save", response_class=HTMLResponse)
+async def save_parameters(request: Request, circuit_id: str):
+    """Persist modified parameters back to the circuit in the database."""
+    db = _get_db(request)
+    form = await request.form()
+
+    with db.connect() as conn:
+        row = conn.execute(
+            "SELECT schema_json FROM circuits WHERE id = ?",
+            (circuit_id,),
+        ).fetchone()
+    if not row:
+        return HTMLResponse("Circuit not found", status_code=404)
+
+    schema = json.loads(row["schema_json"])
+    components = schema.get("components", [])
+
+    # Detect which parameters changed
+    updates = []
+    for comp in components:
+        comp_id = comp.get("id", "")
+        comp_params = comp.get("parameters", {})
+        changed_params = {}
+        for pname, pvalue in comp_params.items():
+            form_key = f"{comp_id}__{pname}"
+            if form_key in form:
+                form_val = form[form_key]
+                if str(form_val) != str(pvalue):
+                    changed_params[pname] = str(form_val)
+        if changed_params:
+            updates.append(ComponentUpdate(id=comp_id, parameters=changed_params))
+
+    if not updates:
+        return HTMLResponse(
+            '<div class="card" style="color:#666;">'
+            "<p>No parameter changes to save.</p></div>"
+        )
+
+    mod = CircuitModification(update=updates)
+    mgr = CircuitManager(db)
+    new_version = mgr.modify(circuit_id, mod)
+
+    return HTMLResponse(
+        '<div class="card" style="color:green;">'
+        f"<p>Parameters saved. Version: {new_version}</p></div>"
+    )

@@ -30,10 +30,19 @@
                 <option value="transient">Transient</option>
             </select>
         </div>
-        <button type="submit" style="margin-top:1rem; padding:0.5rem 1.5rem;
-                background:#2563eb; color:white; border:none; border-radius:4px;
-                cursor:pointer;">Simulate</button>
+        <div style="margin-top:1rem; display:flex; gap:0.5rem;">
+            <button type="submit" style="padding:0.5rem 1.5rem;
+                    background:#2563eb; color:white; border:none; border-radius:4px;
+                    cursor:pointer;">Simulate</button>
+            <button type="button" style="padding:0.5rem 1.5rem;
+                    background:#16a34a; color:white; border:none; border-radius:4px;
+                    cursor:pointer;"
+                    hx-post="/explorer/{{ circuit.id }}/save"
+                    hx-include="closest form"
+                    hx-target="#save-status">Save changes</button>
+        </div>
     </form>
 </div>
+<div id="save-status"></div>
 <div id="results"></div>
 {% endblock %}
