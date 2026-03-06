@@ -51,6 +51,38 @@ class TestWaveformViewer:
         data = resp.json()
         assert "error" in data
 
+    def test_waveform_data_normalizes_transient(self, client):
+        """Test that transient data with 'voltage' key gets normalized to 'signals'."""
+        db = client.app.state.db
+        with db.connect() as conn:
+            conn.execute(
+                "INSERT INTO simulation_results "
+                "(id, circuit_id, analysis_type, parameters, results_json) "
+                "VALUES (?, ?, ?, ?, ?)",
+                ("sim2", "c1", "transient", "{}",
+                 json.dumps({"time": [0, 1], "voltage": [0, 5]})),
+            )
+        resp = client.get("/waveforms/c1/data/sim2")
+        data = resp.json()["data"]
+        assert "signals" in data
+        assert "voltage" in data["signals"]
+
+    def test_waveform_data_normalizes_ac(self, client):
+        """Test that AC data with 'magnitude_db' gets normalized to 'magnitude'."""
+        db = client.app.state.db
+        with db.connect() as conn:
+            conn.execute(
+                "INSERT INTO simulation_results "
+                "(id, circuit_id, analysis_type, parameters, results_json) "
+                "VALUES (?, ?, ?, ?, ?)",
+                ("sim3", "c1", "ac", "{}",
+                 json.dumps({"frequency": [1, 10, 100], "magnitude_db": [0, -3, -20]})),
+            )
+        resp = client.get("/waveforms/c1/data/sim3")
+        data = resp.json()["data"]
+        assert "magnitude" in data
+        assert "magnitude_db" not in data
+
     def test_viewer_no_simulations(self, tmp_path):
         db = Database(tmp_path / "test2.db")
         db.initialize()

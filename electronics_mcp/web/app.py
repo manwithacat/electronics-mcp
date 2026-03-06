@@ -95,6 +95,40 @@ async def list_components(request: Request):
     )
 
 
+@app.get("/components/search", response_class=HTMLResponse)
+async def search_components(request: Request, type: str = "", q: str = ""):
+    db = _get_db(request)
+    with db.connect() as conn:
+        # Get distinct types for the filter dropdown
+        type_rows = conn.execute(
+            "SELECT DISTINCT type FROM component_models ORDER BY type"
+        ).fetchall()
+        types = [r["type"] for r in type_rows]
+
+        # Build query
+        conditions = []
+        params = []
+        if type:
+            conditions.append("type = ?")
+            params.append(type)
+        if q:
+            conditions.append("(part_number LIKE ? OR description LIKE ?)")
+            params.extend([f"%{q}%", f"%{q}%"])
+
+        where = f" WHERE {' AND '.join(conditions)}" if conditions else ""
+        rows = conn.execute(
+            f"SELECT id, type, part_number, manufacturer, description "
+            f"FROM component_models{where} ORDER BY type, part_number LIMIT 200",
+            params,
+        ).fetchall()
+    results = [dict(r) for r in rows]
+    return templates.TemplateResponse(
+        "component_search.html",
+        {"request": request, "results": results, "types": types,
+         "selected_type": type, "query": q},
+    )
+
+
 @app.get("/components/{component_id}", response_class=HTMLResponse)
 async def component_detail(request: Request, component_id: str):
     db = _get_db(request)

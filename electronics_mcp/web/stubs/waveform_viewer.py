@@ -76,4 +76,26 @@ async def waveform_data(request: Request, circuit_id: str, sim_id: str):
         results = json.loads(row["results_json"])
     except (json.JSONDecodeError, TypeError):
         results = {}
-    return {"analysis_type": row["analysis_type"], "data": results}
+
+    # Normalize keys for frontend JS expectations
+    analysis_type = row["analysis_type"]
+    if analysis_type == "transient":
+        # Ensure {time, signals: {name: [values]}} structure
+        if "time" in results and "voltage" in results and "signals" not in results:
+            results["signals"] = {"voltage": results.pop("voltage")}
+        elif "time" in results and "signals" not in results:
+            # Collect any non-time numeric arrays as signals
+            signals = {}
+            for k, v in list(results.items()):
+                if k != "time" and isinstance(v, list):
+                    signals[k] = v
+            if signals:
+                for k in signals:
+                    results.pop(k, None)
+                results["signals"] = signals
+    elif analysis_type == "ac":
+        # Ensure magnitude key (not magnitude_db)
+        if "magnitude_db" in results and "magnitude" not in results:
+            results["magnitude"] = results.pop("magnitude_db")
+
+    return {"analysis_type": analysis_type, "data": results}

@@ -68,3 +68,16 @@ class TestComparisonDetail:
         resp = client.get("/compare/nonexistent/data")
         data = resp.json()
         assert "error" in data
+
+    def test_comparison_run_endpoint(self, client):
+        resp = client.post("/compare/cmp1/run")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "circuits" in data
+        # Both circuits should be in results
+        assert "c0" in data["circuits"]
+        assert "c1" in data["circuits"]
+
+    def test_comparison_run_not_found(self, client):
+        resp = client.post("/compare/nonexistent/run")
+        assert resp.status_code == 404

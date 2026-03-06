@@ -38,17 +38,42 @@
 
 <div id="overlay-plot" style="min-height:300px; margin-top:1rem;"></div>
 <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<button onclick="runComparison()" style="margin-top:0.5rem; padding:0.4rem 1rem;
+    background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;">
+    Run Comparison
+</button>
 <script>
+function renderOverlay(data) {
+    const container = document.getElementById('overlay-plot');
+    const circuits = data.results && data.results.circuits ? data.results.circuits : (data.circuits || {});
+    const traces = [];
+    for (const [cid, cdata] of Object.entries(circuits)) {
+        if (cdata.frequency && cdata.magnitude) {
+            traces.push({
+                x: cdata.frequency, y: cdata.magnitude,
+                name: cdata.name || cid, type: 'scatter', mode: 'lines'
+            });
+        }
+    }
+    if (traces.length > 0) {
+        Plotly.newPlot(container, traces, {
+            title: 'AC Response Overlay',
+            xaxis: {title: 'Frequency (Hz)', type: 'log'},
+            yaxis: {title: 'Magnitude (dB)'},
+            margin: {t: 40}
+        });
+    } else {
+        container.textContent = 'No plottable AC data. Run simulations on each circuit first.';
+    }
+}
+function runComparison() {
+    fetch('/compare/{{ detail.id }}/run', {method: 'POST'})
+        .then(r => r.json())
+        .then(data => renderOverlay({results: {circuits: data.circuits || {}}}));
+}
 fetch('/compare/{{ detail.id }}/data')
     .then(r => r.json())
-    .then(data => {
-        const container = document.getElementById('overlay-plot');
-        if (data.results && Object.keys(data.results).length > 0) {
-            container.textContent = 'Comparison data loaded. Overlay plots require simulation results.';
-        } else {
-            container.textContent = 'No comparison results available yet.';
-        }
-    });
+    .then(renderOverlay);
 </script>
 
 {% else %}

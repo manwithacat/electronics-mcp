@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Component Search - ElectronicsMCP{% endblock %}
+{% block extra_style %}
+.search-form { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: end; margin-bottom: 1rem; }
+.search-form label { font-weight: 600; font-size: 0.85rem; }
+.search-form input, .search-form select { padding: 0.4rem; border: 1px solid #ddd; border-radius: 4px; }
+{% endblock %}
+{% block content %}
+<h1>Component Search</h1>
+<div class="card">
+    <form method="get" action="/components/search" class="search-form">
+        <div>
+            <label>Type</label><br>
+            <select name="type">
+                <option value="">All Types</option>
+                {% for t in types %}
+                <option value="{{ t }}" {% if t == selected_type %}selected{% endif %}>{{ t }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label>Search</label><br>
+            <input type="text" name="q" value="{{ query or '' }}" placeholder="Part number or description">
+        </div>
+        <div>
+            <button type="submit" style="padding:0.4rem 1rem; background:#2563eb; color:white;
+                    border:none; border-radius:4px; cursor:pointer;">Search</button>
+        </div>
+    </form>
+</div>
+<div class="card">
+    {% if results %}
+    <p>Found {{ results|length }} components</p>
+    <table>
+        <thead><tr><th>Part Number</th><th>Type</th><th>Manufacturer</th><th>Description</th></tr></thead>
+        <tbody>
+        {% for r in results %}
+        <tr>
+            <td><a href="/components/{{ r.id }}">{{ r.part_number or '-' }}</a></td>
+            <td>{{ r.type or '-' }}</td>
+            <td>{{ r.manufacturer or '-' }}</td>
+            <td>{{ r.description or '-' }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% elif query or selected_type %}
+    <p>No components matching your criteria.</p>
+    {% else %}
+    <p>Use the search form above to find components.</p>
+    {% endif %}
+</div>
+{% endblock %}

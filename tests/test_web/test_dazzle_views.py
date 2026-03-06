@@ -83,6 +83,21 @@ class TestComponentViews:
         assert resp.status_code == 404
 
 
+class TestComponentSearch:
+    def test_search_page_renders(self, client):
+        resp = client.get("/components/search")
+        assert resp.status_code == 200
+        assert "Component Search" in resp.text
+
+    def test_search_with_query(self, client):
+        resp = client.get("/components/search?q=test")
+        assert resp.status_code == 200
+
+    def test_search_with_type_filter(self, client):
+        resp = client.get("/components/search?type=resistor")
+        assert resp.status_code == 200
+
+
 class TestSubcircuitViews:
     def test_list_subcircuits_empty(self, client):
         resp = client.get("/subcircuits")
