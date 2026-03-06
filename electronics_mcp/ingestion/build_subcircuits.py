@@ -5,6 +5,7 @@ from pathlib import Path
 
 from electronics_mcp.core.database import Database
 from electronics_mcp.core.schema import CircuitSchema
+from electronics_mcp.ingestion.provenance import record_provenance
 
 
 # Standard subcircuit definitions
@@ -631,6 +632,7 @@ def build_subcircuits(db: Database, definitions: list[dict] | None = None) -> di
             CircuitSchema.model_validate(defn["schema"])
 
             sc_id = str(uuid.uuid4())
+            created = False
             with db.connect() as conn:
                 existing = conn.execute(
                     "SELECT id FROM subcircuits WHERE name = ?",
@@ -650,6 +652,13 @@ def build_subcircuits(db: Database, definitions: list[dict] | None = None) -> di
                      json.dumps(defn["ports"]),
                      json.dumps(defn.get("parameters", {})),
                      defn.get("design_notes", "")),
+                )
+                created = True
+
+            if created:
+                record_provenance(
+                    db, "subcircuits", sc_id, "builder",
+                    licence="original", notes=f"Subcircuit: {defn['name']}",
                 )
                 stats["created"] += 1
 

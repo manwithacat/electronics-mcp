@@ -15,13 +15,17 @@ def _escape_sql(value: str | None) -> str:
     return "'" + value.replace("'", "''") + "'"
 
 
-def _export_table(conn, table: str, columns: list[str]) -> list[str]:
-    """Export rows from a table as INSERT statements."""
+def _export_table(conn, table: str, columns: list[str],
+                   exclude_ids: set[str] | None = None) -> list[str]:
+    """Export rows from a table as INSERT statements, excluding QA-failed IDs."""
     rows = conn.execute(
         f"SELECT {', '.join(columns)} FROM {table}"  # noqa: S608
     ).fetchall()
     statements = []
     for row in rows:
+        # Skip rows with IDs that failed QA
+        if exclude_ids and "id" in columns and row["id"] in exclude_ids:
+            continue
         values = []
         for col in columns:
             val = row[col]
@@ -68,7 +72,7 @@ def generate_seed_sql(db: Database, output_path: Path | str) -> dict:
         for stmt in _export_table(conn, "knowledge", [
             "id", "category", "topic", "title", "content",
             "formulas", "related_topics", "difficulty", "source",
-        ]):
+        ], exclude_ids=issue_ids):
             statements.append(stmt)
 
         # Subcircuits
@@ -76,13 +80,29 @@ def generate_seed_sql(db: Database, output_path: Path | str) -> dict:
         for stmt in _export_table(conn, "subcircuits", [
             "id", "name", "category", "description", "schema_json",
             "ports", "parameters", "design_notes", "source",
-        ]):
+        ], exclude_ids=issue_ids):
             statements.append(stmt)
 
-        # Component categories (always include)
+        # Component models
+        statements.append("\n-- Component Models")
+        for stmt in _export_table(conn, "component_models", [
+            "id", "type", "part_number", "manufacturer", "description",
+            "parameters", "spice_model", "datasheet_url", "source",
+        ], exclude_ids=issue_ids):
+            statements.append(stmt)
+
+        # Component categories (always include — no id column)
         statements.append("\n-- Component Categories")
         for stmt in _export_table(conn, "component_categories", [
             "type", "subtype", "selection_guide", "typical_values",
+        ]):
+            statements.append(stmt)
+
+        # Provenance
+        statements.append("\n-- Provenance")
+        for stmt in _export_table(conn, "provenance", [
+            "record_table", "record_id", "source_name", "source_url",
+            "licence", "original_path", "extraction_date", "notes",
         ]):
             statements.append(stmt)
 

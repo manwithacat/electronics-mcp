@@ -5,6 +5,7 @@ import uuid
 from pathlib import Path
 
 from electronics_mcp.core.database import Database
+from electronics_mcp.ingestion.provenance import record_provenance
 
 
 def parse_sexpr(text: str) -> list:
@@ -202,6 +203,7 @@ def ingest_kicad_symbols(file_path: Path | str, db: Database) -> dict:
             params["pins"] = [{"name": p["name"], "number": p["number"],
                                "type": p["type"]} for p in sym["pins"]]
 
+        created = False
         with db.connect() as conn:
             existing = conn.execute(
                 "SELECT id FROM component_models WHERE part_number = ?",
@@ -217,6 +219,16 @@ def ingest_kicad_symbols(file_path: Path | str, db: Database) -> dict:
                 "VALUES (?, ?, ?, ?, ?, ?, ?, 'kicad_import')",
                 (model_id, component_type, sym["name"], sym["description"],
                  json.dumps(params), sym["footprint"], sym["datasheet"]),
+            )
+            created = True
+
+        if created:
+            record_provenance(
+                db, "component_models", model_id, "kicad_import",
+                source_url="https://gitlab.com/kicad/libraries/kicad-symbols",
+                licence="CC-BY-SA-4.0",
+                original_path=str(file_path),
+                notes=f"KiCad symbol: {sym['name']}",
             )
             stats["symbols"] += 1
 

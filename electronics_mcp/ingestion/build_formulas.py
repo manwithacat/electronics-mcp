@@ -3,6 +3,7 @@ import json
 import uuid
 
 from electronics_mcp.core.database import Database
+from electronics_mcp.ingestion.provenance import record_provenance
 
 
 FORMULAS = [
@@ -228,6 +229,8 @@ def build_formulas(db: Database, formula_sets: list[dict] | None = None) -> dict
         for f in fset["formulas"]:
             content += f"- {f['name']}: {f.get('description', f['expression'])}\n"
 
+        created = False
+        num_formulas = 0
         with db.connect() as conn:
             existing = conn.execute(
                 "SELECT id FROM knowledge WHERE topic = ?",
@@ -245,7 +248,15 @@ def build_formulas(db: Database, formula_sets: list[dict] | None = None) -> dict
                  content, json.dumps(fset["formulas"]), json.dumps([]),
                  "intermediate"),
             )
+            created = True
+            num_formulas = len(fset["formulas"])
+
+        if created:
+            record_provenance(
+                db, "knowledge", entry_id, "formula_builder",
+                licence="original", notes=f"Formula set: {fset['topic']}",
+            )
             stats["created"] += 1
-            stats["formulas"] += len(fset["formulas"])
+            stats["formulas"] += num_formulas
 
     return stats

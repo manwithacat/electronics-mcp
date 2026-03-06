@@ -5,6 +5,7 @@ import uuid
 from pathlib import Path
 
 from electronics_mcp.core.database import Database
+from electronics_mcp.ingestion.provenance import record_provenance
 
 
 # Common SPICE model types
@@ -123,6 +124,7 @@ def ingest_spice_file(file_path: Path | str, db: Database) -> dict:
             continue
 
         model_id = str(uuid.uuid4())
+        created = False
         with db.connect() as conn:
             # Skip duplicates
             existing = conn.execute(
@@ -140,6 +142,15 @@ def ingest_spice_file(file_path: Path | str, db: Database) -> dict:
                  json.dumps(parsed["parameters"]),
                  parsed["raw_text"]),
             )
+            created = True
+
+        if created:
+            record_provenance(
+                db, "component_models", model_id, "spice_import",
+                licence="varies",
+                original_path=str(file_path),
+                notes=f"SPICE {parsed['model_type']} model: {parsed['name']}",
+            )
             stats["models"] += 1
 
     # Extract .subckt definitions
@@ -155,6 +166,7 @@ def ingest_spice_file(file_path: Path | str, db: Database) -> dict:
 
         sc_id = str(uuid.uuid4())
         schema = {"name": parsed["name"], "components": []}
+        created = False
         with db.connect() as conn:
             existing = conn.execute(
                 "SELECT id FROM subcircuits WHERE name = ?",
@@ -169,6 +181,15 @@ def ingest_spice_file(file_path: Path | str, db: Database) -> dict:
                 (sc_id, parsed["name"], f"Imported from {file_path.name}",
                  json.dumps(schema), json.dumps(parsed["nodes"]),
                  parsed["raw_text"]),
+            )
+            created = True
+
+        if created:
+            record_provenance(
+                db, "subcircuits", sc_id, "spice_import",
+                licence="varies",
+                original_path=str(file_path),
+                notes=f"SPICE subcircuit: {parsed['name']}",
             )
             stats["subcircuits"] += 1
 

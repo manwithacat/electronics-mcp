@@ -6,6 +6,7 @@ from pathlib import Path
 from html.parser import HTMLParser
 
 from electronics_mcp.core.database import Database
+from electronics_mcp.ingestion.provenance import record_provenance
 
 
 # Volume categories
@@ -141,6 +142,7 @@ def ingest_kuphaldt(
             difficulty = _difficulty_from_depth(volume, section["level"])
 
             entry_id = str(uuid.uuid4())
+            created = False
             with db.connect() as conn:
                 # Skip duplicates
                 existing = conn.execute(
@@ -157,6 +159,16 @@ def ingest_kuphaldt(
                     (entry_id, category, topic, section["title"],
                      section["content"], json.dumps(formulas),
                      json.dumps([]), difficulty),
+                )
+                created = True
+
+            if created:
+                record_provenance(
+                    db, "knowledge", entry_id, "kuphaldt",
+                    source_url="https://www.allaboutcircuits.com/textbook/",
+                    licence="Design Science License",
+                    original_path=str(html_file),
+                    notes=f"Volume: {volume}, Topic: {topic}",
                 )
                 stats["articles"] += 1
                 stats["formulas"] += len(formulas)

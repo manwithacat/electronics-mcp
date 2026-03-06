@@ -3,6 +3,7 @@ import json
 import uuid
 
 from electronics_mcp.core.database import Database
+from electronics_mcp.ingestion.provenance import record_provenance
 
 
 DESIGN_RULES = [
@@ -219,6 +220,7 @@ def build_design_rules(db: Database, rules: list[dict] | None = None) -> dict:
 
     for rule in rules:
         entry_id = str(uuid.uuid4())
+        created = False
         with db.connect() as conn:
             existing = conn.execute(
                 "SELECT id FROM knowledge WHERE topic = ?",
@@ -235,6 +237,13 @@ def build_design_rules(db: Database, rules: list[dict] | None = None) -> dict:
                 (entry_id, rule["category"], rule["topic"], rule["title"],
                  rule["content"], json.dumps([]), json.dumps([]),
                  "intermediate"),
+            )
+            created = True
+
+        if created:
+            record_provenance(
+                db, "knowledge", entry_id, "design_rules",
+                licence="original", notes=f"Design rule: {rule['topic']}",
             )
             stats["created"] += 1
 
