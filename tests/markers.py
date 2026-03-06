@@ -4,12 +4,24 @@ import pytest
 
 
 def _ngspice_works() -> bool:
-    """Check if PySpice can load and use the ngspice shared library."""
-    try:
-        from PySpice.Spice.NgSpice.Shared import NgSpiceShared
+    """Check if PySpice can actually run simulations (not just load the library).
 
-        ngspice = NgSpiceShared.new_instance()
-        return ngspice is not None
+    On Ubuntu Noble, ngspice 42 loads fine but fails at simulation time
+    with 'Unsupported Ngspice version 42'. We must attempt a real simulation.
+    """
+    try:
+        import warnings
+
+        from PySpice.Spice.Netlist import Circuit
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            ckt = Circuit("marker_probe")
+            ckt.V(1, "probe_node", ckt.gnd, "DC 1V")
+            ckt.R(1, "probe_node", ckt.gnd, "1k")
+            sim = ckt.simulator()
+            sim.operating_point()
+        return True
     except Exception:
         return False
 
